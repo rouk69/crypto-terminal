@@ -203,8 +203,8 @@ function viewMarket(){
       ${m.tiers.map((t, i) => `<div class="row" style="cursor:default;${i ? '' : 'padding-top:0'}">
         <div class="cdot" style="background:var(--field)">${t.emoji}</div>
         <div class="row-main">
-          <div class="row-t" style="font-size:15px">${esc(t.label)}</div>
-          <div class="row-s wrap">${esc(t.risk)} · ${esc(t.upside)}</div>
+          <div class="row-t" style="font-size:15px">${UI.t('tier_' + t.tier)}</div>
+          <div class="row-s wrap">${UI.t('risk_' + t.tier)} · ${UI.t('up_' + t.tier)}</div>
         </div>
         <div class="row-right">
           ${t.n ? `<div class="row-v ${dirClass(t.beat - 50)}">${t.beat}%</div>
@@ -230,7 +230,7 @@ function callCard(c){
       ${coinDot(c)}
       <div style="flex:1;min-width:0">
         <div class="row-t">${esc(c.s)} <span class="badge ${s.b}">${UI.t(s.key)}</span></div>
-        <div class="row-s">${c.tierEmoji || ''} ${esc(c.tierLabel || '')} · ${localTime(c.at)}</div>
+        <div class="row-s">${c.tierEmoji || ''} ${c.tier ? UI.t('tier_' + c.tier) : ''} · ${localTime(c.at)}</div>
       </div>
       <div style="text-align:right">
         ${done
@@ -307,15 +307,15 @@ function viewCoin(){
           <div class="row-s ${dirClass(c.ch)}" style="font-size:15px;font-weight:700">${pct(c.ch)}</div>
           <div style="margin-top:10px">
             <span class="badge ${s.b}">${UI.t(s.key)}</span>
-            <span class="badge b-watch">${c.tierEmoji} ${esc(c.tierLabel)}</span>
+            <span class="badge b-watch">${c.tierEmoji} ${UI.t('tier_' + c.tier)}</span>
           </div>
         </div>
         ${ring(c.conf)}
       </div>
       <div class="row-s wrap" style="margin-top:12px">
-        ${esc(c.risk)} · ${esc(c.upside)}
+        ${UI.t('risk_' + c.tier)} · ${UI.t('up_' + c.tier)}
       </div>
-      ${c.lotteryWarning ? `<div class="warn">${esc(c.lotteryWarning)}</div>` : ''}
+      ${c.isLottery ? `<div class="warn">${UI.t('lotteryWarning')}</div>` : ''}
     </div>
 
     ${c.levels ? levelsCard(c) : ''}
@@ -361,7 +361,7 @@ function levelsCard(c){
         <div class="row-main"><div class="row-t" style="font-size:15px">${t}</div></div>
         <div class="row-right"><div class="row-v ${k}">${price(v)}</div></div>
       </div>`).join('')}
-      <div class="note">${(c.levelsNote || []).map(esc).join(' ')}</div>
+      <div class="note">${UI.t('levelsNote')}</div>
     </div>`;
 }
 

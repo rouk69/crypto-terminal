@@ -495,3 +495,7 @@ body{
   font-size:12px;font-weight:800;letter-spacing:.02em;
   text-transform:uppercase;
 }
+
+/* Подпись в кольце: «agreement» длиннее «согласия» и упиралась в края.
+   Кольцо не растягиваем — оно часть сетки карточки; ужимаем текст. */
+.ring-l{font-size:9px;letter-spacing:-.01em;padding:0 4px;text-align:center;line-height:1.1}

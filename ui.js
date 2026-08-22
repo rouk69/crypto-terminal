@@ -61,6 +61,20 @@
     ru: {
       market: 'Рынок', coins: 'Монеты', calls: 'Коллы', profile: 'Профиль',
       analysis: 'Разбор',
+      tier_major: 'Крупные', tier_news: 'Новостной',
+      tier_alt: 'Альткоин', tier_meme: 'Мемкоин',
+      risk_major: 'умеренный риск', risk_news: 'средний риск',
+      risk_alt: 'повышенный риск', risk_meme: 'лотерея',
+      up_major: 'движение небольшое', up_news: 'движение резкое, но короткое',
+      up_alt: 'движение заметное', up_meme: 'может дать кратно',
+      lotteryWarning: 'Заходить только суммой, которую не жалко потерять ' +
+        'целиком: у таких монет это обычный исход, а не редкий.',
+      levelsNote: 'Вход — текущая цена, без ожидания отката. Первая цель — ' +
+        'там, где монета уже разворачивалась за сутки. Вторая — за границей ' +
+        'суточного диапазона, если движение продолжится. Стоп за входом: ' +
+        'дальше него движение против позиции перестаёт быть шумом. Уровни ' +
+        'считаются от диапазона суток, а не от фиксированного процента: на ' +
+        'биткоине и на мемкоине «пять процентов» означают совершенно разное.',
       marketSub: 'Что сканер видит прямо сейчас',
       coinsSub: 'Вселенная сканера — топ-100 и мемкоины',
       callsAll: 'Все сигналы и их исходы',
@@ -111,6 +125,21 @@
     en: {
       market: 'Market', coins: 'Coins', calls: 'Calls', profile: 'Profile',
       analysis: 'Analysis',
+      tier_major: 'Majors', tier_news: 'News-driven',
+      tier_alt: 'Altcoin', tier_meme: 'Memecoin',
+      risk_major: 'moderate risk', risk_news: 'medium risk',
+      risk_alt: 'elevated risk', risk_meme: 'a lottery',
+      up_major: 'small moves', up_news: 'sharp but short moves',
+      up_alt: 'noticeable moves', up_meme: 'can pay many times over',
+      lotteryWarning: 'Only risk what you can lose in full: for coins like ' +
+        'these that is an ordinary outcome, not a rare one.',
+      levelsNote: 'Entry is the current price, with no waiting for a ' +
+        'pullback. The first target sits where the coin already turned ' +
+        'around today. The second is beyond the daily range, if the move ' +
+        'carries on. The stop is past the entry: further than that, a move ' +
+        'against the position stops being noise. Levels come from the daily ' +
+        'range rather than a fixed percentage — on bitcoin and on a memecoin ' +
+        '"five percent" mean entirely different things.',
       marketSub: 'What the scanner sees right now',
       coinsSub: 'Scanner universe — top 100 and memecoins',
       callsAll: 'All signals and their outcomes',
