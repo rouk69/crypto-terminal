@@ -1,0 +1,426 @@
+/* ==========================================================================
+   popanchik — дизайн-система «си» (see.tg)
+   светлый лавандово-серый фон, белые squircle-карточки, синий акцент
+   ========================================================================== */
+
+:root{
+  --bg:            #EEF0F5;
+  --bg-deep:       #E6E9F1;
+  --card:          #FFFFFF;
+  --primary:       #3D6EF7;
+  --primary-press: #2D5AE0;
+  --primary-soft:  #E4EBFF;
+  --primary-nav:   #DCE5FA;
+  --chart-soft:    #A9C0F9;
+  --text:          #15171C;
+  --muted:         #8B909C;
+  --muted-2:       #A6ABB6;
+  --sep:           #ECEDF2;
+  --field:         #F2F3F7;
+  --green:         #30C36B;
+  --green-soft:    #E3F7EC;
+  --red:           #F04438;
+  --red-soft:      #FEECEB;
+  --amber:         #FF9F0A;
+  --amber-soft:    #FFF3E0;
+  --violet:        #8B7BF5;
+
+  --r-card: 24px;
+  --r-tile: 20px;
+  --r-pill: 999px;
+
+  --pad: 18px;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+
+body{
+  font-family:'Manrope', ui-rounded, -apple-system, 'SF Pro Rounded', 'Segoe UI', system-ui, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ---------- оболочка Telegram ----------
+   Рамки телефона и статус-бара здесь нет: их рисует сам мессенджер, а
+   вторая поверх настоящей выглядела бы как ошибка вёрстки. Приложение
+   занимает весь лист, отступы снизу — под safe-area и плавающую
+   навигацию.
+
+   Цвет фона берётся у Telegram, но с запасным значением: пока тема не
+   применилась (первый кадр) или если мини-апп открыли из браузера,
+   переменных --tg-* не существует. */
+.stage{ min-height:100%; }
+.device{
+  position:relative;
+  width:100%;
+  min-height:100vh;
+  min-height:100dvh;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+}
+.statusbar{
+  flex:0 0 auto;height:50px;padding:14px 26px 0;
+  display:flex;align-items:center;justify-content:space-between;
+  color:var(--text);
+}
+.sb-time{font-weight:800;font-size:15px;letter-spacing:.02em}
+.sb-right{display:flex;align-items:center;gap:5px}
+
+/* ---------- скролл-экран ---------- */
+.screen{
+  flex:1 1 auto;overflow-y:auto;overflow-x:hidden;
+  padding:6px var(--pad) 130px;
+  scroll-behavior:smooth;
+}
+.screen::-webkit-scrollbar{width:0}
+
+/* ---------- заголовки ---------- */
+.h1{font-size:31px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:8px 0 0}
+.h1-sub{font-size:15px;color:var(--muted);font-weight:500;margin:5px 0 0}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:22px}
+.head-actions{display:flex;gap:8px;padding-top:6px}
+
+.sec{margin:22px 0 10px;display:flex;align-items:baseline;gap:9px}
+.sec-t{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.sec-s{font-size:14px;color:var(--muted);font-weight:500}
+.sec-link{margin-left:auto;font-size:14px;font-weight:700;color:var(--primary)}
+
+/* ---------- карточки ---------- */
+.card{background:var(--card);border-radius:var(--r-card);padding:16px}
+.card.flush{padding:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+
+/* строки списка */
+.row{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;position:relative;cursor:pointer;
+  transition:background .15s;
+}
+.row+.row::before{
+  content:'';position:absolute;left:16px;right:16px;top:0;height:1px;background:var(--sep);
+}
+.row:active{background:#F7F8FB}
+.row-main{flex:1 1 auto;min-width:0}
+.row-t{font-size:16px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.row-t .badge{flex:0 0 auto}
+.row-s{font-size:13px;color:var(--muted);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-right{text-align:right;flex:0 0 auto}
+.row-v{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.row-sv{font-size:13px;font-weight:700;margin-top:2px}
+.chev{color:#C7CBD5;flex:0 0 auto}
+
+/* ---------- монета ---------- */
+.coin{
+  width:40px;height:40px;border-radius:50%;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;color:#fff;letter-spacing:-.02em;
+}
+.coin.lg{width:84px;height:84px;font-size:29px}
+.coin.sm{width:30px;height:30px;font-size:12px}
+
+/* ---------- бейджи / пилюли ---------- */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:var(--r-pill);
+  font-size:12px;font-weight:800;letter-spacing:.01em;
+}
+.b-long{background:var(--green-soft);color:#1FA659}
+.b-short{background:var(--red-soft);color:var(--red)}
+.b-watch{background:#EEF0F5;color:#7E8494}
+.b-blue{background:var(--primary-soft);color:var(--primary)}
+.b-amber{background:var(--amber-soft);color:#D98200}
+
+.up{color:var(--green)}
+.down{color:var(--red)}
+.flat{color:var(--muted)}
+
+/* pill-табы */
+.pills{display:flex;gap:8px;overflow-x:auto;padding:2px 0 2px;margin:0 -2px}
+.pills::-webkit-scrollbar{height:0}
+.pill{
+  flex:0 0 auto;border:0;cursor:pointer;
+  background:var(--card);color:#71778A;
+  font-family:inherit;font-size:15px;font-weight:700;
+  padding:10px 17px;border-radius:var(--r-pill);
+  transition:transform .12s, background .18s, color .18s;
+}
+.pill:active{transform:scale(.96)}
+.pill.on{background:var(--primary);color:#fff}
+.pill.sm{font-size:13px;padding:7px 13px}
+
+/* сегмент-контрол на сером */
+.seg{display:flex;background:var(--field);border-radius:var(--r-pill);padding:4px;gap:4px}
+.seg button{
+  flex:1;border:0;cursor:pointer;background:transparent;color:#7A8091;
+  font-family:inherit;font-size:15px;font-weight:700;padding:10px 6px;border-radius:var(--r-pill);
+  transition:background .18s,color .18s;
+}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(20,26,48,.10)}
+
+/* ---------- KPI-плитки ---------- */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.kpi{background:var(--card);border-radius:var(--r-tile);padding:16px}
+.kpi-v{font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.kpi-l{font-size:14px;color:var(--muted);font-weight:500;margin-top:6px}
+.kpi-d{font-size:13px;font-weight:800;margin-top:5px}
+.kpi.c{text-align:center;padding:14px 8px}
+.kpi.c .kpi-v{font-size:22px}
+.kpi.c .kpi-l{font-size:13px;margin-top:4px}
+
+/* action-плитки профиля монеты */
+.act{
+  background:var(--card);border-radius:var(--r-tile);border:0;cursor:pointer;
+  font-family:inherit;padding:12px 4px 11px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:transform .12s,background .18s;
+}
+.act:active{transform:scale(.96)}
+.act.on{background:var(--primary-soft)}
+.act-i{font-size:19px;line-height:1}
+.act-l{font-size:12px;font-weight:700;color:#6E7484}
+.act.on .act-l{color:var(--primary)}
+
+/* ---------- индекс страха и жадности ---------- */
+.gauge{display:flex;align-items:center;gap:16px}
+.gauge-v{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.gauge-l{font-size:15px;font-weight:700;margin-top:4px}
+.fgbar{position:relative;height:9px;border-radius:var(--r-pill);margin-top:14px;
+  background:linear-gradient(90deg,#F0663A 0%,#F2A93B 32%,#EEDC63 52%,#7FD68A 74%,#30C36B 100%)}
+.fgbar i{position:absolute;top:-4px;width:5px;height:17px;border-radius:3px;background:#fff;
+  box-shadow:0 0 0 2px rgba(21,23,28,.10);transform:translateX(-50%);transition:left .5s cubic-bezier(.2,.8,.2,1)}
+.fglabels{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted-2);margin-top:8px}
+
+/* кольцо-прогресс */
+.ring{position:relative;flex:0 0 auto}
+.ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-v{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.ring-l{font-size:10px;font-weight:700;color:var(--muted);margin-top:1px}
+.verdict .ring-v{color:#fff}
+.verdict .ring-l{color:rgba(255,255,255,.82)}
+
+/* ---------- поиск ---------- */
+.search{
+  display:flex;align-items:center;gap:10px;background:var(--card);
+  border-radius:var(--r-pill);padding:13px 16px;cursor:pointer;
+}
+.search span{color:var(--muted);font-size:15px;font-weight:600}
+.icon-btn{
+  width:40px;height:40px;border-radius:50%;background:var(--card);border:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:var(--text);
+  transition:transform .12s;flex:0 0 auto;
+}
+.icon-btn:active{transform:scale(.92)}
+.icon-btn.on{background:var(--primary);color:#fff}
+
+/* ---------- кнопки ---------- */
+.btn{
+  width:100%;border:0;cursor:pointer;font-family:inherit;
+  background:var(--primary);color:#fff;
+  font-size:17px;font-weight:800;letter-spacing:-.01em;
+  padding:17px;border-radius:var(--r-pill);
+  transition:transform .12s,background .18s;
+}
+.btn:active{transform:scale(.985);background:var(--primary-press)}
+.btn.ghost{background:var(--card);color:var(--text)}
+.btn.grad{background:linear-gradient(135deg,#5B86FF,#3D6EF7 55%,#2F55D6)}
+
+/* ---------- вердикт ---------- */
+.verdict{border-radius:var(--r-card);padding:18px;color:#fff;position:relative;overflow:hidden}
+.verdict.long{background:linear-gradient(135deg,#3ED17F,#1FA659)}
+.verdict.short{background:linear-gradient(135deg,#FF7A6E,#E03A2D)}
+.verdict.watch{background:linear-gradient(135deg,#9AA2B4,#6E7688)}
+.verdict-top{display:flex;align-items:center;gap:14px}
+.verdict-w{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.verdict-s{font-size:14px;font-weight:600;opacity:.9;margin-top:5px;line-height:1.35}
+.verdict-foot{display:flex;gap:8px;margin-top:16px}
+.vchip{flex:1;background:rgba(255,255,255,.20);border-radius:14px;padding:9px 4px;text-align:center}
+.vchip b{display:block;font-size:15px;font-weight:800}
+.vchip span{display:block;font-size:11px;font-weight:700;opacity:.85;margin-top:2px}
+
+/* ---------- график ---------- */
+.chart-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.chart-cap{font-size:13px;color:var(--muted);font-weight:600}
+.chart-val{font-size:15px;font-weight:800}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart-x{display:flex;justify-content:space-between;font-size:12px;color:var(--muted-2);font-weight:600;margin-top:8px}
+.periods{display:flex;gap:6px;background:var(--field);border-radius:var(--r-pill);padding:4px;margin-top:14px}
+.periods button{
+  flex:1;border:0;background:transparent;cursor:pointer;font-family:inherit;
+  font-size:13px;font-weight:700;color:#7A8091;padding:8px 2px;border-radius:var(--r-pill);
+  transition:background .18s,color .18s;
+}
+.periods button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(20,26,48,.10)}
+
+/* столбики */
+.bars{display:flex;align-items:flex-end;gap:4px;height:96px}
+.bars i{flex:1;background:var(--chart-soft);border-radius:4px;display:block;transition:height .4s}
+.bars i.peak{background:var(--primary)}
+
+/* составная полоса */
+.stackbar{display:flex;gap:4px;margin-bottom:6px}
+.stackbar i{height:11px;border-radius:var(--r-pill)}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+
+/* прогресс-полоска */
+.track{height:6px;border-radius:var(--r-pill);background:var(--field);overflow:hidden;margin-top:9px}
+.track i{display:block;height:100%;border-radius:var(--r-pill);background:var(--primary);transition:width .4s}
+
+/* ---------- поля / тумблеры ---------- */
+.field-l{font-size:14px;color:var(--muted);font-weight:500;margin:0 0 7px 4px}
+.field{
+  background:var(--field);border-radius:16px;padding:14px 16px;
+  font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+}
+.field span.ph{color:var(--muted-2);font-weight:600}
+
+.switch{
+  width:51px;height:31px;border-radius:var(--r-pill);background:#E2E4EC;border:0;cursor:pointer;
+  position:relative;flex:0 0 auto;transition:background .25s;
+}
+.switch i{
+  position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;
+  box-shadow:0 2px 5px rgba(20,26,48,.20);transition:left .25s cubic-bezier(.3,1.4,.5,1);
+}
+.switch.on{background:var(--primary)}
+.switch.on i{left:22px}
+
+.slider{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:var(--r-pill);
+  background:var(--field);outline:0;margin:12px 0 2px}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:#fff;box-shadow:0 2px 8px rgba(20,26,48,.25);cursor:pointer}
+
+/* чипы выбора */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  border:0;cursor:pointer;font-family:inherit;background:var(--field);color:#6E7484;
+  font-size:14px;font-weight:700;padding:9px 14px;border-radius:var(--r-pill);
+  display:inline-flex;align-items:center;gap:7px;transition:transform .12s,background .18s,color .18s;
+}
+.chip:active{transform:scale(.95)}
+.chip.on{background:var(--primary);color:#fff}
+
+/* ---------- шапка монеты ---------- */
+.back{
+  width:40px;height:40px;border-radius:50%;background:var(--card);border:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:transform .12s;
+}
+.back:active{transform:scale(.92)}
+.coin-head{text-align:center;margin:6px 0 18px}
+.coin-name{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:7px}
+.coin-price{font-size:36px;font-weight:800;letter-spacing:-.03em;margin-top:6px;line-height:1}
+.coin-meta{font-size:14px;color:var(--muted);font-weight:500;margin-top:8px}
+
+/* ---------- нижняя навигация ---------- */
+.tabbar{
+  position:absolute;left:16px;right:16px;bottom:14px;height:66px;
+  background:rgba(238,240,245,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-radius:var(--r-pill);
+  display:flex;align-items:center;padding:6px;gap:2px;
+  box-shadow:0 8px 30px rgba(20,26,48,.10);
+}
+.tab{
+  flex:1;border:0;background:transparent;cursor:pointer;font-family:inherit;
+  height:54px;border-radius:var(--r-pill);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:#8A90A0;transition:background .22s,color .22s;
+}
+.tab span{font-size:11px;font-weight:700}
+.tab.on{background:var(--primary-nav);color:var(--primary)}
+
+/* ---------- bottom sheet ---------- */
+.sheet-backdrop{
+  position:absolute;inset:0;background:rgba(16,19,28,.34);
+  opacity:0;pointer-events:none;transition:opacity .3s;z-index:20;
+}
+.sheet-backdrop.on{opacity:1;pointer-events:auto}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:21;
+  background:var(--bg);border-radius:28px 28px 0 0;
+  transform:translateY(110%);transition:transform .38s cubic-bezier(.2,.9,.25,1);
+  max-height:86%;display:flex;flex-direction:column;
+}
+.sheet.on{transform:translateY(0)}
+.sheet-inner{overflow-y:auto;padding:10px 18px 30px}
+.sheet-inner::-webkit-scrollbar{width:0}
+.grabber{width:38px;height:5px;border-radius:3px;background:#D2D5DE;margin:0 auto 10px}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sheet-title{font-size:17px;font-weight:800;position:absolute;left:0;right:0;text-align:center;pointer-events:none}
+.sheet-act{border:0;background:transparent;font-family:inherit;font-size:16px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 0}
+
+/* ---------- toast ---------- */
+.toast{
+  position:absolute;left:50%;bottom:100px;transform:translate(-50%,20px);
+  background:rgba(21,23,28,.92);color:#fff;font-size:14px;font-weight:700;
+  padding:12px 20px;border-radius:var(--r-pill);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- анимация появления экрана ---------- */
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.view{animation:viewIn .28s cubic-bezier(.2,.8,.25,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+.view.push{animation:slideIn .3s cubic-bezier(.2,.8,.25,1)}
+
+/* ==========================================================================
+   Добавлено к прототипу: то, чего в макете не было, потому что там не было
+   ни настоящих данных, ни ожидания, ни платного доступа.
+   ========================================================================== */
+
+/* Кружок монеты. В прототипе символы валют рисовались глифами (₿, Ξ, ◎),
+   но их набор кончается на восьмой монете, а во вселенной сканера их две
+   сотни. Первая буква тикера работает для любой. */
+.cdot{
+  width:38px;height:38px;flex:0 0 38px;
+  border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:15px;
+}
+
+.spark{flex:0 0 64px;margin:0 10px}
+
+/* Предупреждение о полной потере. Красное и НЕ свёрнутое: то, что надо
+   развернуть, чтобы прочитать, предупреждением не является. */
+.warn{
+  margin-top:12px;padding:11px 13px;
+  background:var(--red-soft);color:var(--red);
+  border-radius:14px;
+  font-size:13px;font-weight:700;line-height:1.4;
+}
+
+/* Пояснение под таблицей — тем же кеглем, что и подписи строк, но
+   приглушённое: это справка, а не данные. */
+.note{
+  padding:12px 16px 14px;
+  color:var(--muted);
+  font-size:12.5px;line-height:1.5;font-weight:500;
+  border-top:1px solid var(--sep);
+}
+
+/* Честная заглушка вместо платного содержимого. Не замок с призывом
+   купить: человек и так знает, где кнопка подписки, а окно с призывом
+   поверх пустого экрана раздражает сильнее, чем объяснение. */
+.lock{
+  background:var(--primary-soft);
+}
+
+/* Ожидание. Пульсация вместо крутилки: карточка нужного размера сразу
+   занимает место, и содержимое не прыгает, когда данные приедут. */
+.skel{
+  height:84px;
+  background:linear-gradient(90deg, var(--field) 25%, var(--bg-deep) 50%, var(--field) 75%);
+  background-size:200% 100%;
+  animation:skel 1.3s ease-in-out infinite;
+}
+@keyframes skel{ from{background-position:200% 0} to{background-position:-200% 0} }
+
+.chart-empty{
+  height:150px;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-weight:600;font-size:13px;
+  background:var(--field);border-radius:var(--r-tile);
+}
