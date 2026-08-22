@@ -30,13 +30,15 @@ const I = {
   user:   '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
   search: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>',
   chevL:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg>',
-  refresh:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.7 4.3"/><path d="M20 4v6h-6"/></svg>'
+  refresh:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.7 4.3"/><path d="M20 4v6h-6"/></svg>',
+  moon:   '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>',
+  sun:    '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>'
 };
 
 const SIDE = {
-  long:  { b:'b-long',  cls:'up',   label:'Лонг' },
-  short: { b:'b-short', cls:'down', label:'Шорт' },
-  watch: { b:'b-watch', cls:'flat', label:'Ждём' }
+  long:  { b:'b-long',  cls:'up',   key:'long' },
+  short: { b:'b-short', cls:'down', key:'short' },
+  watch: { b:'b-watch', cls:'flat', key:'watch' }
 };
 
 /* ---------------------------- состояние --------------------------------- */
@@ -51,7 +53,7 @@ const S = {
 const $ = s => document.querySelector(s);
 const _e = document.createElement('div');
 const esc = s => { _e.textContent = s == null ? '' : String(s); return _e.innerHTML; };
-const nf = (v, d) => Number(v).toLocaleString('ru-RU', { minimumFractionDigits:d, maximumFractionDigits:d });
+const nf = (v, d) => Number(v).toLocaleString(UI.locale(), { minimumFractionDigits:d, maximumFractionDigits:d });
 
 function price(v){
   if (v == null || !isFinite(v)) return '—';
@@ -65,9 +67,10 @@ function pct(v){
 }
 function cap(v){
   if (!v) return '—';
-  if (v >= 1e12) return nf(v/1e12,2) + ' трлн';
-  if (v >= 1e9)  return nf(v/1e9,1)  + ' млрд';
-  if (v >= 1e6)  return nf(v/1e6,0)  + ' млн';
+  const u = UI.lang === 'ru' ? [' трлн',' млрд',' млн'] : ['T','B','M'];
+  if (v >= 1e12) return nf(v/1e12,2) + u[0];
+  if (v >= 1e9)  return nf(v/1e9,1)  + u[1];
+  if (v >= 1e6)  return nf(v/1e6,0)  + u[2];
   return nf(v,0);
 }
 const dirClass = v => v > 0 ? 'up' : v < 0 ? 'down' : 'flat';
@@ -79,7 +82,7 @@ function localTime(stamp){
   if (!stamp) return '';
   const d = new Date(String(stamp).replace(' ', 'T') + 'Z');
   if (isNaN(d)) return esc(stamp);
-  return d.toLocaleString('ru-RU', { day:'2-digit', month:'short',
+  return d.toLocaleString(UI.locale(), { day:'2-digit', month:'short',
                                      hour:'2-digit', minute:'2-digit' });
 }
 
@@ -108,7 +111,7 @@ function spark(vals, up){
 
 function lineChart(vals, up, h = 150){
   if (!vals || vals.length < 2)
-    return `<div class="chart-empty">Ряд цен недоступен</div>`;
+    return `<div class="chart-empty">${UI.t('noSeries')}</div>`;
   const w = 330, c = up ? 'var(--green)' : 'var(--red)';
   const pts = polyline(vals, w, h, 6);
   const first = pts.split(' ')[0].split(',')[0];
@@ -124,7 +127,8 @@ function lineChart(vals, up, h = 150){
   </svg>`;
 }
 
-function ring(v, size = 78, sw = 9, label = 'согласие'){
+function ring(v, size = 78, sw = 9, label){
+  label = label || UI.t('agreement');
   const r = (size - sw) / 2, len = 2 * Math.PI * r;
   const off = len * (1 - Math.max(0, Math.min(100, v)) / 100);
   return `<div class="ring" style="width:${size}px;height:${size}px">
@@ -165,21 +169,21 @@ async function load(key, path, force){
 /* ---------------------------- экран: РЫНОК ------------------------------ */
 function viewMarket(){
   const m = S.data.market;
-  if (!m) return skeleton('Рынок');
+  if (!m) return skeleton(UI.t('market'));
 
   const h24 = (m.horizons && m.horizons['24']) || {};
   const kpis = [
     { v: m.callsPerDay != null ? nf(m.callsPerDay,1) : '—',
-      l: 'Коллов в сутки', cls:'' },
+      l: UI.t('callsPerDay'), cls:'' },
     { v: h24.beat != null ? h24.beat + '%' : '—',
-      l: 'Обогнали BTC · сутки', cls: h24.beat == null ? '' : dirClass(h24.beat - 50) },
-    { v: m.passes, l: 'Проходов за 24ч', cls:'' },
-    { v: m.downtimeMin ? m.downtimeMin + ' мин' : 'нет',
-      l: 'Простой', cls: m.downtimeMin ? 'down' : 'up' }
+      l: UI.t('beatBtc'), cls: h24.beat == null ? '' : dirClass(h24.beat - 50) },
+    { v: m.passes, l: UI.t('passes'), cls:'' },
+    { v: m.downtimeMin ? m.downtimeMin + ' ' + UI.t('min') : UI.t('none'),
+      l: UI.t('downtime'), cls: m.downtimeMin ? 'down' : 'up' }
   ];
 
   return `<div class="view">
-    ${pageHead('Рынок', 'Что сканер видит прямо сейчас', true)}
+    ${pageHead(UI.t('market'), UI.t('marketSub'), true)}
 
     <div class="grid2">
       ${kpis.map(k => `<div class="kpi">
@@ -190,11 +194,11 @@ function viewMarket(){
 
     <div class="search" style="margin-top:12px" data-go="coins">
       <span style="color:var(--primary);display:flex">${I.search}</span>
-      <span>Найти монету и разобрать</span>
+      <span>${UI.t('findCoin')}</span>
     </div>
 
-    <div class="sec"><div class="sec-t">Точность по классам</div>
-      <div class="sec-s">за 30 дней</div></div>
+    <div class="sec"><div class="sec-t">${UI.t('tierAccuracy')}</div>
+      <div class="sec-s">${UI.t('last30')}</div></div>
     <div class="card">
       ${m.tiers.map((t, i) => `<div class="row" style="cursor:default;${i ? '' : 'padding-top:0'}">
         <div class="cdot" style="background:var(--field)">${t.emoji}</div>
@@ -204,16 +208,16 @@ function viewMarket(){
         </div>
         <div class="row-right">
           ${t.n ? `<div class="row-v ${dirClass(t.beat - 50)}">${t.beat}%</div>
-                   <div class="row-s">${t.n} замеров</div>`
-                : `<div class="row-s">данных нет</div>`}
+                   <div class="row-s">${t.n} ${UI.t('measures')}</div>`
+                : `<div class="row-s">${UI.t('noData')}</div>`}
         </div>
       </div>`).join('')}
     </div>
 
-    <div class="sec"><div class="sec-t">Свежие коллы</div>
-      <div class="sec-link" data-go="signals">все</div></div>
+    <div class="sec"><div class="sec-t">${UI.t('freshCalls')}</div>
+      <div class="sec-link" data-go="signals">${UI.t('all')}</div></div>
     <div class="stack">
-      ${m.recent.length ? m.recent.map(callCard).join('') : empty('Коллов пока не было')}
+      ${m.recent.length ? m.recent.map(callCard).join('') : empty(UI.t('noCalls'))}
     </div>
   </div>`;
 }
@@ -225,14 +229,14 @@ function callCard(c){
     <div style="display:flex;align-items:center;gap:11px">
       ${coinDot(c)}
       <div style="flex:1;min-width:0">
-        <div class="row-t">${esc(c.s)} <span class="badge ${s.b}">${s.label}</span></div>
+        <div class="row-t">${esc(c.s)} <span class="badge ${s.b}">${UI.t(s.key)}</span></div>
         <div class="row-s">${c.tierEmoji || ''} ${esc(c.tierLabel || '')} · ${localTime(c.at)}</div>
       </div>
       <div style="text-align:right">
         ${done
           ? `<div class="row-v ${dirClass(c.result)}">${pct(c.result)}</div>
-             <div class="row-s">за ${c.horizon}ч</div>`
-          : `<div class="row-s">идёт</div>`}
+             <div class="row-s">${UI.t('forHours')} ${c.horizon}ч</div>`
+          : `<div class="row-s">${UI.t('running')}</div>`}
       </div>
     </div>
   </div>`;
@@ -241,27 +245,27 @@ function callCard(c){
 /* ---------------------------- экран: МОНЕТЫ ----------------------------- */
 function viewCoins(){
   const d = S.data.coins;
-  if (!d) return skeleton('Монеты');
+  if (!d) return skeleton(UI.t('coins'));
 
   const q = S.query.trim().toLowerCase();
   let list = d.coins.filter(c =>
     (S.tierFilter === 'all' || c.tier === S.tierFilter) &&
     (!q || (c.s || '').toLowerCase().includes(q) || (c.n || '').toLowerCase().includes(q)));
 
-  const tabs = [['all','Все'],['major','Крупные'],['news','Новостные'],
-                ['alt','Альткоины'],['meme','Мемкоины']];
+  const tabs = [['all','tabAll'],['major','tabMajor'],['news','tabNews'],
+                ['alt','tabAlt'],['meme','tabMeme']];
 
   return `<div class="view">
-    ${pageHead('Монеты', 'Вселенная сканера — топ-100 и мемкоины', true)}
+    ${pageHead(UI.t('coins'), UI.t('coinsSub'), true)}
 
     <label class="search" style="margin-bottom:10px">
       <span style="color:var(--primary);display:flex">${I.search}</span>
-      <input id="q" placeholder="Тикер или название" value="${esc(S.query)}"
+      <input id="q" placeholder="${UI.t('search')}" value="${esc(S.query)}"
         style="border:0;background:transparent;outline:0;font:inherit;color:inherit;width:100%">
     </label>
 
     <div class="pills" data-pills="tierFilter">
-      ${tabs.map(([k,v]) => `<button class="pill ${S.tierFilter===k?'on':''}" data-v="${k}">${v}</button>`).join('')}
+      ${tabs.map(([k,v]) => `<button class="pill ${S.tierFilter===k?'on':''}" data-v="${k}">${UI.t(v)}</button>`).join('')}
     </div>
 
     <div class="card" style="margin-top:12px;padding:0">
@@ -276,7 +280,7 @@ function viewCoins(){
           <div class="row-v">${price(c.p)}</div>
           <div class="row-s ${dirClass(c.ch)}">${pct(c.ch)}</div>
         </div>
-      </div>`).join('') : empty('Ничего не нашлось')}
+      </div>`).join('') : empty(UI.t('nothingFound'))}
     </div>
   </div>`;
 }
@@ -284,7 +288,7 @@ function viewCoins(){
 /* ---------------------------- экран: РАЗБОР ----------------------------- */
 function viewCoin(){
   const c = S.data.coin;
-  if (!c) return skeleton('Разбор');
+  if (!c) return skeleton(UI.t('analysis'));
   const s = SIDE[c.side] || SIDE.watch;
 
   return `<div class="view">
@@ -300,9 +304,9 @@ function viewCoin(){
       <div style="display:flex;align-items:center;gap:14px">
         <div style="flex:1">
           <div class="gauge-v ${dirClass(c.ch)}" style="font-size:30px">${price(c.p)}</div>
-          <div class="row-s ${dirClass(c.ch)}" style="font-size:15px;font-weight:700">${pct(c.ch)} за сутки</div>
+          <div class="row-s ${dirClass(c.ch)}" style="font-size:15px;font-weight:700">${pct(c.ch)}</div>
           <div style="margin-top:10px">
-            <span class="badge ${s.b}">${s.label}</span>
+            <span class="badge ${s.b}">${UI.t(s.key)}</span>
             <span class="badge b-watch">${c.tierEmoji} ${esc(c.tierLabel)}</span>
           </div>
         </div>
@@ -316,8 +320,8 @@ function viewCoin(){
 
     ${c.levels ? levelsCard(c) : ''}
 
-    <div class="sec"><div class="sec-t">Из чего оценка</div>
-      <div class="sec-s">вес компонента</div></div>
+    <div class="sec"><div class="sec-t">${UI.t('whyScore')}</div>
+      <div class="sec-s">${UI.t('weight')}</div></div>
     <div class="card" style="padding:0">
       ${c.factors.map(f => `<div class="row" style="cursor:default">
         <div class="row-main">
@@ -332,7 +336,7 @@ function viewCoin(){
     </div>
 
     ${c.news && c.news.length ? `
-      <div class="sec"><div class="sec-t">${c.news.some(n => n.isEvent) ? 'Новости' : 'Пишут о самом движении'}</div></div>
+      <div class="sec"><div class="sec-t">${c.news.some(n => n.isEvent) ? UI.t('news') : UI.t('newsEcho')}</div></div>
       <div class="card" style="padding:0">
         ${c.news.map(n => `<div class="row" style="cursor:default">
           <div class="row-main"><div class="row-s" style="color:var(--text);font-weight:600">${esc(n.text)}</div>
@@ -345,13 +349,13 @@ function viewCoin(){
 function levelsCard(c){
   const L = c.levels, up = c.side !== 'short';
   const rows = [
-    ['Вход',        L.entry,   ''],
-    ['Цель 1',      L.target1, up ? 'up' : 'up'],
-    ['Цель 2',      L.target2, 'up'],
-    ['Стоп',        L.stop,    'down']
+    [UI.t('entry'),   L.entry,   ''],
+    [UI.t('target1'), L.target1, 'up'],
+    [UI.t('target2'), L.target2, 'up'],
+    [UI.t('stop'),    L.stop,    'down']
   ];
-  return `<div class="sec"><div class="sec-t">Вход, цели и стоп</div>
-      <div class="sec-s">${L.rr ? 'прибыль к риску ' + nf(L.rr,2) + ':1' : ''}</div></div>
+  return `<div class="sec"><div class="sec-t">${UI.t('levels')}</div>
+      <div class="sec-s">${L.rr ? UI.t('rr') + ' ' + nf(L.rr,2) + ':1' : ''}</div></div>
     <div class="card" style="padding:0">
       ${rows.map(([t, v, k]) => `<div class="row" style="cursor:default">
         <div class="row-main"><div class="row-t" style="font-size:15px">${t}</div></div>
@@ -364,21 +368,18 @@ function levelsCard(c){
 /* ---------------------------- экран: СИГНАЛЫ ---------------------------- */
 function viewSignals(){
   const d = S.data.signals;
-  if (!d) return skeleton('Сигналы');
+  if (!d) return skeleton(UI.t('calls'));
 
   return `<div class="view">
-    ${pageHead('Коллы', d.full ? 'Все сигналы и их исходы'
-                               : 'Отработавшие сигналы', true)}
+    ${pageHead(UI.t('calls'), d.full ? UI.t('callsAll') : UI.t('callsSettled'), true)}
 
     ${d.full ? '' : `<div class="card lock">
-      <div class="row-t" style="font-size:16px">Показаны только отработавшие</div>
-      <div class="row-s" style="margin-top:6px">Здесь коллы, у которых закрылись
-        все горизонты — им не меньше недели, торговой ценности в них уже нет.
-        Свежие сигналы приходят подписчикам в момент выхода.</div>
+      <div class="row-t" style="font-size:16px">${UI.t('onlySettled')}</div>
+      <div class="row-s wrap" style="margin-top:6px">${UI.t('onlySettledWhy')}</div>
     </div>`}
 
     <div class="stack" style="margin-top:12px">
-      ${d.calls.length ? d.calls.map(callCard).join('') : empty('Пока пусто')}
+      ${d.calls.length ? d.calls.map(callCard).join('') : empty(UI.t('empty'))}
     </div>
   </div>`;
 }
@@ -386,15 +387,13 @@ function viewSignals(){
 /* ---------------------------- экран: ПРОФИЛЬ ---------------------------- */
 function viewMe(){
   const me = S.data.me;
-  if (!me) return skeleton('Профиль');
+  if (!me) return skeleton(UI.t('profile'));
 
   if (!me.authorized) return `<div class="view">
-    ${pageHead('Профиль', 'Открыто вне Telegram', false)}
+    ${pageHead(UI.t('profile'), UI.t('outsideTg'), false)}
     <div class="card">
-      <div class="row-t" style="font-size:16px">Кто вы — неизвестно</div>
-      <div class="row-s" style="margin-top:6px">Личность подтверждается подписью
-        Telegram, а её выдаёт только сам мессенджер. Откройте приложение
-        кнопкой в боте, и профиль появится.</div>
+      <div class="row-t" style="font-size:16px">${UI.t('whoAreYou')}</div>
+      <div class="row-s wrap" style="margin-top:6px">${UI.t('whoAreYouWhy')}</div>
     </div>
   </div>`;
 
@@ -405,28 +404,25 @@ function viewMe(){
   ];
 
   return `<div class="view">
-    ${pageHead(esc(me.name || 'Профиль'), me.subscribed ? 'Подписка активна'
-                                                        : 'Без подписки', false)}
+    ${pageHead(esc(me.name || UI.t('profile')), me.subscribed ? UI.t('subActive') : UI.t('subNone'), false)}
     <div class="card">
       <div class="row" style="cursor:default;padding-top:0">
-        <div class="row-main"><div class="row-t" style="font-size:15px">Подписка</div></div>
+        <div class="row-main"><div class="row-t" style="font-size:15px">${UI.t('subscription')}</div></div>
         <div class="row-right"><div class="row-v ${me.subscribed ? 'up' : ''}">
-          ${me.subscribed ? 'активна' : 'нет'}</div>
-          ${me.expires ? `<div class="row-s">до ${esc(String(me.expires).slice(0,10))}</div>` : ''}
+          ${me.subscribed ? UI.t('active') : UI.t('none')}</div>
+          ${me.expires ? `<div class="row-s">${UI.t('until')} ${esc(String(me.expires).slice(0,10))}</div>` : ''}
         </div>
       </div>
     </div>
 
-    <div class="sec"><div class="sec-t">Какие коллы приходят</div></div>
+    <div class="sec"><div class="sec-t">${UI.t('whichCalls')}</div></div>
     <div class="card" style="padding:0">
       ${toggles.map(([k, label]) => `<div class="row" style="cursor:default">
         <div class="row-main"><div class="row-t" style="font-size:15px">${label}</div></div>
         <div class="row-right"><div class="row-v ${st[k] ? 'up' : ''}">
-          ${st[k] ? 'вкл' : 'выкл'}</div></div>
+          ${st[k] ? UI.t('on') : UI.t('off')}</div></div>
       </div>`).join('')}
-      <div class="note">Переключаются в боте: «Настройки» → «Какие коллы присылать».
-        Здесь они показаны, но не меняются — чтобы не было двух мест, где
-        одно и то же настраивается по-разному.</div>
+      <div class="note">${UI.t('togglesWhy')}</div>
     </div>
   </div>`;
 }
@@ -435,30 +431,33 @@ function viewMe(){
 function pageHead(title, sub, refresh){
   return `<div class="page-head">
     <div><h1 class="h1">${esc(title)}</h1><p class="h1-sub">${esc(sub)}</p></div>
-    ${refresh ? `<div class="head-actions">
-      <button class="icon-btn" data-refresh>${I.refresh}</button></div>` : ''}
+    <div class="head-actions">
+      <button class="icon-btn lang" data-lang>${UI.lang}</button>
+      <button class="icon-btn" data-theme>${UI.theme === 'dark' ? I.sun : I.moon}</button>
+      ${refresh ? `<button class="icon-btn" data-refresh>${I.refresh}</button>` : ''}
+    </div>
   </div>`;
 }
 const empty = t => `<div class="card" style="text-align:center;color:var(--muted);font-weight:600">${esc(t)}</div>`;
 function skeleton(title){
-  return `<div class="view">${pageHead(title, 'Загружаю…', false)}
+  return `<div class="view">${pageHead(title, UI.t('loading'), false)}
     ${[0,1,2].map(() => '<div class="card skel"></div>').join('')}</div>`;
 }
 
 const VIEWS = { market:viewMarket, coins:viewCoins, signals:viewSignals,
                 me:viewMe, coin:viewCoin };
 const TABS = [
-  ['market','Рынок',   I.grid],
-  ['coins', 'Монеты',  I.coins],
-  ['signals','Коллы',  I.bell],
-  ['me',    'Профиль', I.user]
+  ['market','market',  I.grid],
+  ['coins', 'coins',   I.coins],
+  ['signals','calls',  I.bell],
+  ['me',    'profile', I.user]
 ];
 
 function render(){
   $('#screen').innerHTML = (VIEWS[S.view] || viewMarket)();
   $('#tabbar').innerHTML = TABS.map(([k, label, icon]) =>
     `<button class="tab ${S.view === k ? 'on' : ''}" data-tab="${k}">
-       ${icon}<span>${label}</span></button>`).join('');
+       ${icon}<span>${UI.t(label)}</span></button>`).join('');
   $('#screen').scrollTop = 0;
 
   // Системная кнопка «назад» вместо своей: на экране разбора она уже есть
@@ -493,14 +492,13 @@ async function go(view, opts){
     if (view === 'coin') {
       S.data.coin = null; render();
       S.data.coin = await api('/api/coin/' + encodeURIComponent(S.coin));
-      if (S.data.coin && S.data.coin.error) { S.data.coin = null; toast('Монету разобрать не вышло'); }
+      if (S.data.coin && S.data.coin.error) { S.data.coin = null; toast(UI.t('errCoin')); }
     }
   } catch (err) {
     // Разные беды — разные слова. «Бот выключен» на закладке без адреса
     // отправило бы человека чинить то, что не сломано.
     toast(err && err.message === 'no-api'
-      ? 'Откройте приложение кнопкой в боте — по ссылке адрес данных не передаётся.'
-      : 'Данные недоступны: бот выключен или туннель перезапустился.');
+      ? UI.t('errNoApi') : UI.t('errData'));
   }
   render();
 }
@@ -525,8 +523,21 @@ document.addEventListener('click', e => {
     S[group] = pill.dataset.v; haptic(); return render();
   }
 
+  const lang = e.target.closest('[data-lang]');
+  if (lang) {
+    haptic();
+    UI.toggleLang();
+    // Перерисовываем текущий экран, а не перезагружаем данные: язык живёт
+    // в интерфейсе, а цифры от него не зависят.
+    render();
+    return toast(UI.t('langSwitched'));
+  }
+
+  const theme = e.target.closest('[data-theme]');
+  if (theme) { haptic(); const label = UI.cycleTheme(); render(); return toast(label); }
+
   if (e.target.closest('[data-refresh]')) {
-    haptic('medium'); toast('Обновляю…');
+    haptic('medium'); toast(UI.t('refreshing'));
     return go(S.view, { force:true });
   }
 });
@@ -544,22 +555,12 @@ document.addEventListener('input', e => {
 });
 
 /* ---------------------------- запуск ------------------------------------ */
-function applyTheme(){
-  // Тема берётся у Telegram, но только фон и текст: перекрашивать акцент
-  // и карточки под чужую палитру значит потерять дизайн, ради которого
-  // всё и делалось. Меняется подложка, чтобы приложение не выглядело
-  // белым пятном в тёмном мессенджере.
-  if (!TG || !TG.themeParams) return;
-  const p = TG.themeParams;
-  if (p.bg_color) document.documentElement.style.setProperty('--bg', p.bg_color);
-  if (p.secondary_bg_color) document.documentElement.style.setProperty('--bg-deep', p.secondary_bg_color);
-}
-
+/* Темой и языком заведует ui.js — он подключён раньше и красит документ до
+   первой отрисовки, иначе человек с тёмной темой увидел бы вспышку
+   светлого экрана. */
 if (TG) {
   TG.ready();
   TG.expand();
-  applyTheme();
-  TG.onEvent('themeChanged', applyTheme);
   if (TG.BackButton) TG.BackButton.onClick(() => go(S.prev));
 }
 
