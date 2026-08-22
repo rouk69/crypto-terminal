@@ -101,8 +101,8 @@ function polyline(vals, w, h, pad){
 function spark(vals, up){
   if (!vals || vals.length < 2) return '';
   const c = up ? 'var(--green)' : 'var(--red)';
-  return `<svg class="spark" width="64" height="26" viewBox="0 0 64 26" fill="none">
-    <polyline points="${polyline(vals, 64, 26, 2)}" stroke="${c}" stroke-width="2"
+  return `<svg class="spark" width="46" height="26" viewBox="0 0 46 26" fill="none">
+    <polyline points="${polyline(vals, 46, 26, 2)}" stroke="${c}" stroke-width="2"
       stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
@@ -134,7 +134,7 @@ function ring(v, size = 78, sw = 9, label = 'согласие'){
         fill="none" stroke-linecap="round" stroke-dasharray="${len}" stroke-dashoffset="${off}"
         transform="rotate(-90 ${size/2} ${size/2})"/>
     </svg>
-    <div class="ring-c"><b>${v}%</b><span>${label}</span></div>
+    <div class="ring-c"><div class="ring-v">${v}%</div><div class="ring-l">${label}</div></div>
   </div>`;
 }
 
@@ -193,14 +193,14 @@ function viewMarket(){
       <span>Найти монету и разобрать</span>
     </div>
 
-    <div class="sec"><div class="sec-t">Точность по классам риска</div>
+    <div class="sec"><div class="sec-t">Точность по классам</div>
       <div class="sec-s">за 30 дней</div></div>
     <div class="card">
       ${m.tiers.map((t, i) => `<div class="row" style="cursor:default;${i ? '' : 'padding-top:0'}">
         <div class="cdot" style="background:var(--field)">${t.emoji}</div>
         <div class="row-main">
           <div class="row-t" style="font-size:15px">${esc(t.label)}</div>
-          <div class="row-s">${esc(t.risk)} · ${esc(t.upside)}</div>
+          <div class="row-s wrap">${esc(t.risk)} · ${esc(t.upside)}</div>
         </div>
         <div class="row-right">
           ${t.n ? `<div class="row-v ${dirClass(t.beat - 50)}">${t.beat}%</div>
@@ -308,7 +308,7 @@ function viewCoin(){
         </div>
         ${ring(c.conf)}
       </div>
-      <div class="row-s" style="margin-top:12px">
+      <div class="row-s wrap" style="margin-top:12px">
         ${esc(c.risk)} · ${esc(c.upside)}
       </div>
       ${c.lotteryWarning ? `<div class="warn">${esc(c.lotteryWarning)}</div>` : ''}
@@ -316,7 +316,7 @@ function viewCoin(){
 
     ${c.levels ? levelsCard(c) : ''}
 
-    <div class="sec"><div class="sec-t">Из чего сложилась оценка</div>
+    <div class="sec"><div class="sec-t">Из чего оценка</div>
       <div class="sec-s">вес компонента</div></div>
     <div class="card" style="padding:0">
       ${c.factors.map(f => `<div class="row" style="cursor:default">
