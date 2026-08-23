@@ -213,8 +213,13 @@ function viewMarket(){
   const kpis = [
     { v: m.callsPerDay != null ? nf(m.callsPerDay,1) : '—',
       l: UI.t('callsPerDay'), cls:'' },
+    // Точка отсчёта здесь 50%, а не ноль, и без подписи это не читается:
+    // 36% выглядит просто как «мало», хотя означает «хуже, чем не делать
+    // ничего». Цветом это уже сказано (dirClass от 50), но цвет объясняет
+    // только направление, а не величину.
     { v: h24.beat != null ? h24.beat + '%' : '—',
-      l: UI.t('beatBtc'), cls: h24.beat == null ? '' : dirClass(h24.beat - 50) },
+      l: UI.t('beatBtc'), hint: h24.beat != null ? UI.t('beatBtcHint') : '',
+      cls: h24.beat == null ? '' : dirClass(h24.beat - 50) },
     { v: m.passes, l: UI.t('passes'), cls:'' },
     { v: m.downtimeMin ? m.downtimeMin + ' ' + UI.t('min') : UI.t('none'),
       l: UI.t('downtime'), cls: m.downtimeMin ? 'down' : 'up' }
@@ -229,6 +234,7 @@ function viewMarket(){
       ${kpis.map(k => `<div class="kpi">
         <div class="kpi-v ${k.cls}">${esc(k.v)}</div>
         <div class="kpi-l">${esc(k.l)}</div>
+        ${k.hint ? `<div class="kpi-h">${esc(k.hint)}</div>` : ''}
       </div>`).join('')}
     </div>
 
@@ -252,6 +258,7 @@ function viewMarket(){
                 : `<div class="row-s">${UI.t('noData')}</div>`}
         </div>
       </div>`).join('')}
+      <div class="note">${esc(UI.t('tierNote'))}</div>
     </div>
 
     <div class="sec"><div class="sec-t">${UI.t('freshCalls')}</div>
