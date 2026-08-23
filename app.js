@@ -433,7 +433,7 @@ function pageHead(title, sub, refresh){
     <div><h1 class="h1">${esc(title)}</h1><p class="h1-sub">${esc(sub)}</p></div>
     <div class="head-actions">
       <button class="icon-btn lang" data-lang>${UI.lang}</button>
-      <button class="icon-btn" data-theme>${UI.theme === 'dark' ? I.sun : I.moon}</button>
+      <button class="icon-btn" data-theme-btn>${UI.theme === 'dark' ? I.sun : I.moon}</button>
       ${refresh ? `<button class="icon-btn" data-refresh>${I.refresh}</button>` : ''}
     </div>
   </div>`;
@@ -533,7 +533,7 @@ document.addEventListener('click', e => {
     return toast(UI.t('langSwitched'));
   }
 
-  const theme = e.target.closest('[data-theme]');
+  const theme = e.target.closest('[data-theme-btn]');
   if (theme) { haptic(); const label = UI.cycleTheme(); render(); return toast(label); }
 
   if (e.target.closest('[data-refresh]')) {
