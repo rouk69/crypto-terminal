@@ -25,6 +25,19 @@
   --amber-soft:    #FFF3E0;
   --violet:        #8B7BF5;
 
+  /* Ниже — то, что раньше стояло литералами прямо в правилах и поэтому
+     НЕ переключалось вместе с темой: нижняя навигация оставалась светлой
+     на тёмном фоне, «поднятая» пилюля сегмент-контрола светилась белым,
+     выключенный тумблер был светло-серым. Тёмная тема переопределяет
+     токены, но до вписанного цвета добраться не может — значит цвета,
+     зависящие от темы, обязаны быть токенами. */
+  --nav-bg:     rgba(238,240,245,.86); /* полупрозрачный: под ним blur */
+  --raised:     #FFFFFF;               /* активная пилюля поверх --field */
+  --switch-off: #E2E4EC;
+  --press:      #F7F8FB;               /* подсветка строки под пальцем */
+  --grabber:    #D2D5DE;
+  --chev:       #C7CBD5;
+
   --r-card: 24px;
   --r-tile: 20px;
   --r-pill: 999px;
@@ -102,7 +115,7 @@ body{
 .row+.row::before{
   content:'';position:absolute;left:16px;right:16px;top:0;height:1px;background:var(--sep);
 }
-.row:active{background:#F7F8FB}
+.row:active{background:var(--press)}
 .row-main{flex:1 1 auto;min-width:0}
 .row-t{font-size:16px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:7px;white-space:nowrap}
 .row-t .badge{flex:0 0 auto}
@@ -110,7 +123,7 @@ body{
 .row-right{text-align:right;flex:0 0 auto}
 .row-v{font-size:16px;font-weight:800;letter-spacing:-.01em}
 .row-sv{font-size:13px;font-weight:700;margin-top:2px}
-.chev{color:#C7CBD5;flex:0 0 auto}
+.chev{color:var(--chev);flex:0 0 auto}
 
 /* ---------- монета ---------- */
 .coin{
@@ -129,7 +142,7 @@ body{
 }
 .b-long{background:var(--green-soft);color:#1FA659}
 .b-short{background:var(--red-soft);color:var(--red)}
-.b-watch{background:#EEF0F5;color:#7E8494}
+.b-watch{background:var(--field);color:#7E8494}
 .b-blue{background:var(--primary-soft);color:var(--primary)}
 .b-amber{background:var(--amber-soft);color:#D98200}
 
@@ -158,7 +171,7 @@ body{
   font-family:inherit;font-size:15px;font-weight:700;padding:10px 6px;border-radius:var(--r-pill);
   transition:background .18s,color .18s;
 }
-.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(20,26,48,.10)}
+.seg button.on{background:var(--raised);color:var(--text);box-shadow:0 1px 3px rgba(20,26,48,.10)}
 
 /* ---------- KPI-плитки ---------- */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -254,7 +267,7 @@ body{
   font-size:13px;font-weight:700;color:#7A8091;padding:8px 2px;border-radius:var(--r-pill);
   transition:background .18s,color .18s;
 }
-.periods button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(20,26,48,.10)}
+.periods button.on{background:var(--raised);color:var(--text);box-shadow:0 1px 3px rgba(20,26,48,.10)}
 
 /* столбики */
 .bars{display:flex;align-items:flex-end;gap:4px;height:96px}
@@ -279,7 +292,7 @@ body{
 .field span.ph{color:var(--muted-2);font-weight:600}
 
 .switch{
-  width:51px;height:31px;border-radius:var(--r-pill);background:#E2E4EC;border:0;cursor:pointer;
+  width:51px;height:31px;border-radius:var(--r-pill);background:var(--switch-off);border:0;cursor:pointer;
   position:relative;flex:0 0 auto;transition:background .25s;
 }
 .switch i{
@@ -318,7 +331,7 @@ body{
 /* ---------- нижняя навигация ---------- */
 .tabbar{
   position:absolute;left:16px;right:16px;bottom:14px;height:66px;
-  background:rgba(238,240,245,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  background:var(--nav-bg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   border-radius:var(--r-pill);
   display:flex;align-items:center;padding:6px;gap:2px;
   box-shadow:0 8px 30px rgba(20,26,48,.10);
@@ -347,7 +360,7 @@ body{
 .sheet.on{transform:translateY(0)}
 .sheet-inner{overflow-y:auto;padding:10px 18px 30px}
 .sheet-inner::-webkit-scrollbar{width:0}
-.grabber{width:38px;height:5px;border-radius:3px;background:#D2D5DE;margin:0 auto 10px}
+.grabber{width:38px;height:5px;border-radius:3px;background:var(--grabber);margin:0 auto 10px}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .sheet-title{font-size:17px;font-weight:800;position:absolute;left:0;right:0;text-align:center;pointer-events:none}
 .sheet-act{border:0;background:transparent;font-family:inherit;font-size:16px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 0}
@@ -477,6 +490,20 @@ body{
   --amber:         #FFB13D;
   --amber-soft:    #33260F;
   --violet:        #9A8BFF;
+
+  /* Полупрозрачный фон навигации — тот же --bg, что и в светлой теме,
+     но тёмный: под ним размытие, и непрозрачный цвет убил бы эффект
+     плавающей капсулы. */
+  --nav-bg:     rgba(15,16,20,.86);
+  /* «Поднятая» пилюля обязана быть СВЕТЛЕЕ дорожки (--field #26272D), а
+     не темнее: в светлой теме белое на сером читается как приподнятое,
+     и в тёмной этот порядок должен сохраниться. Взять сюда --card
+     (#1C1D22) значило бы перевернуть его — пилюля утонула бы в дорожке. */
+  --raised:     #383A42;
+  --switch-off: #3A3C44;
+  --press:      #24262C;
+  --grabber:    #3C3E46;
+  --chev:       #4A4D57;
 }
 
 /* Тени в тёмной теме не работают: чёрное на чёрном не видно. Их роль —
