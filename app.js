@@ -35,6 +35,49 @@ const I = {
   sun:    '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>'
 };
 
+/* Иконки строк: путь отдельно от обёртки.
+   Обёртка у всех одна и та же — 24x24, обводка currentColor, скругления,
+   как у набора в I выше. Держать её в каждой иконке значило бы
+   пятнадцать раз повторить одну строку и однажды разойтись в толщине. */
+const P = {
+  trend:   '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  pulse:   '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  globe:   '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  zap:     '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  shield:  '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  swap:    '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  chat:    '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  compass: '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
+  target:  '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/>',
+  login:   '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><path d="M15 12H3"/>',
+  octagon: '<polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  gem:     '<path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/>',
+  horn:    '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  medal:   '<circle cx="12" cy="15" r="6"/><path d="M8.5 9.5 7 2h10l-1.5 7.5"/>',
+  dice:    '<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.6" cy="8.6" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.3" fill="currentColor" stroke="none"/>'
+};
+
+function svg(name, size){
+  return P[name] ? `<svg width="${size}" height="${size}" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">${P[name]}</svg>` : '';
+}
+
+/* Иконка по СМЫСЛУ компонента, а не по порядку: строки разбора
+   пересортировываются по вкладу, и привязка к позиции разъехалась бы. */
+const FACTOR_ICON = {
+  price: 'trend', technicals: 'pulse', sentiment: 'chat', trigger: 'zap',
+  fundamentals: 'shield', derivatives: 'swap', macro: 'globe',
+  btc_regime: 'compass'
+};
+
+/* Классы риска. В боте они остались цветными эмодзи намеренно — там это
+   ярусный ряд медалей, и цвет несёт смысл. Здесь набор монохромный и
+   линейный, поэтому эмодзи выбивались из него единственным цветным пятном. */
+const TIER_ICON = {
+  major: 'gem', news: 'horn', alt: 'medal', meme: 'dice'
+};
+
 const SIDE = {
   long:  { b:'b-long',  cls:'up',   key:'long' },
   short: { b:'b-short', cls:'down', key:'short' },
@@ -247,7 +290,8 @@ function viewMarket(){
       <div class="sec-s">${UI.t('last30')}</div></div>
     <div class="card">
       ${m.tiers.map((t, i) => `<div class="row" style="cursor:default;${i ? '' : 'padding-top:0'}">
-        <div class="cdot" style="background:var(--field)">${t.emoji}</div>
+        <div class="cdot" style="background:var(--field);color:var(--muted)">
+          ${svg(TIER_ICON[t.tier] || 'dice', 18)}</div>
         <div class="row-main">
           <div class="row-t" style="font-size:15px">${UI.t('tier_' + t.tier)}</div>
           <div class="row-s wrap">${UI.t('risk_' + t.tier)} · ${UI.t('up_' + t.tier)}</div>
@@ -382,7 +426,8 @@ function viewCoin(){
           <div class="row-s ${dirClass(c.ch)}" style="font-size:15px;font-weight:700">${pct(c.ch)}</div>
           <div style="margin-top:10px">
             <span class="badge ${s.b}">${UI.t(s.key)}</span>
-            <span class="badge b-watch">${c.tierEmoji} ${UI.t('tier_' + c.tier)}</span>
+            <span class="badge b-watch" style="gap:5px">${
+              svg(TIER_ICON[c.tier] || 'dice', 13)} ${UI.t('tier_' + c.tier)}</span>
           </div>
         </div>
         ${ring(c.conf)}
@@ -399,6 +444,8 @@ function viewCoin(){
       <div class="sec-s">${UI.t('weight')}</div></div>
     <div class="card" style="padding:0">
       ${c.factors.map(f => `<div class="row" style="cursor:default">
+        <div class="cdot" style="background:var(--field);color:var(--muted)">
+          ${svg(FACTOR_ICON[f.key] || 'pulse', 18)}</div>
         <div class="row-main">
           <div class="row-t" style="font-size:15px">${esc(f.t)}</div>
           <div class="row-s">${esc(f.d)}</div>
@@ -423,16 +470,20 @@ function viewCoin(){
 
 function levelsCard(c){
   const L = c.levels, up = c.side !== 'short';
+  // Иконка на строку: вход, две цели и стоп различаются с одного
+  // взгляда, а не вчитыванием подписей.
   const rows = [
-    [UI.t('entry'),   L.entry,   ''],
-    [UI.t('target1'), L.target1, 'up'],
-    [UI.t('target2'), L.target2, 'up'],
-    [UI.t('stop'),    L.stop,    'down']
+    [UI.t('entry'),   L.entry,   '',     'login'],
+    [UI.t('target1'), L.target1, 'up',   'target'],
+    [UI.t('target2'), L.target2, 'up',   'target'],
+    [UI.t('stop'),    L.stop,    'down', 'octagon']
   ];
   return `<div class="sec"><div class="sec-t">${UI.t('levels')}</div>
       <div class="sec-s">${L.rr ? UI.t('rr') + ' ' + nf(L.rr,2) + ':1' : ''}</div></div>
     <div class="card" style="padding:0">
-      ${rows.map(([t, v, k]) => `<div class="row" style="cursor:default">
+      ${rows.map(([t, v, k, ic]) => `<div class="row" style="cursor:default">
+        <div class="cdot" style="background:var(--field);color:var(--muted)">
+          ${svg(ic, 18)}</div>
         <div class="row-main"><div class="row-t" style="font-size:15px">${t}</div></div>
         <div class="row-right"><div class="row-v ${k}">${price(v)}</div></div>
       </div>`).join('')}
