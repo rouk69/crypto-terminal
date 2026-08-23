@@ -324,7 +324,7 @@ function viewCoins(){
                 ['alt','tabAlt'],['meme','tabMeme']];
 
   return `<div class="view">
-    ${pageHead(UI.t('coins'), UI.t('coinsSub'), true)}
+    ${pageHead(UI.t('coins'), UI.t('coinsSub'), true, true)}
 
     <label class="search" style="margin-bottom:10px">
       <span style="color:var(--primary);display:flex">${I.search}</span>
@@ -439,7 +439,7 @@ function viewSignals(){
   if (!d) return skeleton(UI.t('calls'));
 
   return `<div class="view">
-    ${pageHead(UI.t('calls'), d.full ? UI.t('callsAll') : UI.t('callsSettled'), true)}
+    ${pageHead(UI.t('calls'), d.full ? UI.t('callsAll') : UI.t('callsSettled'), true, true)}
 
     ${d.full ? '' : `<div class="card lock">
       <div class="row-t" style="font-size:16px">${UI.t('onlySettled')}</div>
@@ -496,9 +496,14 @@ function viewMe(){
 }
 
 /* ---------------------------- каркас ------------------------------------ */
-function pageHead(title, sub, refresh){
+/* back — вернуться на «Рынок». Именно data-go, а не data-back: data-back
+   ведёт на S.prev, а для вкладки это она сама (go() пишет туда каждый
+   не-coin экран), то есть стрелка не делала бы ничего. */
+function pageHead(title, sub, refresh, back){
   return `<div class="page-head">
-    <div><h1 class="h1">${esc(title)}</h1><p class="h1-sub">${esc(sub)}</p></div>
+    ${back ? `<button class="icon-btn" data-go="market"
+                style="margin-top:6px">${I.chevL}</button>` : ''}
+    <div style="flex:1;min-width:0"><h1 class="h1">${esc(title)}</h1><p class="h1-sub">${esc(sub)}</p></div>
     <div class="head-actions">
       <button class="icon-btn lang" data-lang>${UI.lang}</button>
       <button class="icon-btn" data-theme-btn>${UI.theme === 'dark' ? I.sun : I.moon}</button>
