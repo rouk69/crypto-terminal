@@ -44,7 +44,7 @@ const SIDE = {
 /* ---------------------------- состояние --------------------------------- */
 const S = {
   view:'market', prev:'market', coin:null,
-  tierFilter:'all', query:'',
+  tierFilter:'all', sideFilter:'all', query:'',
   data:{ market:null, coins:null, signals:null, me:null, coin:null },
   loading:false
 };
@@ -167,9 +167,47 @@ async function load(key, path, force){
 }
 
 /* ---------------------------- экран: РЫНОК ------------------------------ */
+/* Индекс страха и жадности.
+   Классификацию берём у источника (он же задаёт пороги), но показываем
+   своими словами — иначе при английском интерфейсе половина карточки
+   осталась бы русской, а при русском в неё попал бы «Extreme Greed».
+   Карточки нет вовсе, если источник молчит: выдуманные 50 «нейтрально»
+   неотличимы на экране от настоящих. */
+const FNG_KEYS = {
+  'Extreme Fear':  { k:'fngExtremeFear',  cls:'down' },
+  'Fear':          { k:'fngFear',         cls:'down' },
+  'Neutral':       { k:'fngNeutral',      cls:'flat' },
+  'Greed':         { k:'fngGreed',        cls:'up'   },
+  'Extreme Greed': { k:'fngExtremeGreed', cls:'up'   }
+};
+
+function fngCard(f){
+  if (!f || f.value == null) return '';
+  const meta = FNG_KEYS[f.label] || { k:'fngNeutral', cls:'flat' };
+  return `<div class="card">
+    <div class="chart-cap" style="margin-bottom:10px">${UI.t('fngTitle')}</div>
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <div class="gauge-v ${meta.cls}">${f.value}</div>
+      <div class="gauge-l ${meta.cls}" style="font-size:18px">${UI.t(meta.k)}</div>
+      ${f.prev != null
+        ? `<div class="row-s" style="margin-left:auto">${UI.t('fngYesterday')} ${f.prev}</div>`
+        : ''}
+    </div>
+    <div class="fgbar"><i style="left:${Math.max(0, Math.min(100, f.value))}%"></i></div>
+    <div class="fglabels">
+      <span>${UI.t('fngFear')}</span>
+      <span>${UI.t('fngNeutral')}</span>
+      <span>${UI.t('fngGreed')}</span>
+    </div>
+  </div>`;
+}
+
 function viewMarket(){
   const m = S.data.market;
   if (!m) return skeleton(UI.t('market'));
+
+  const recent = m.recent.filter(c =>
+    S.sideFilter === 'all' || (c.side || 'watch') === S.sideFilter);
 
   const h24 = (m.horizons && m.horizons['24']) || {};
   const kpis = [
@@ -185,7 +223,9 @@ function viewMarket(){
   return `<div class="view">
     ${pageHead(UI.t('market'), UI.t('marketSub'), true)}
 
-    <div class="grid2">
+    ${fngCard(m.fng)}
+
+    <div class="grid2" style="margin-top:12px">
       ${kpis.map(k => `<div class="kpi">
         <div class="kpi-v ${k.cls}">${esc(k.v)}</div>
         <div class="kpi-l">${esc(k.l)}</div>
@@ -216,15 +256,29 @@ function viewMarket(){
 
     <div class="sec"><div class="sec-t">${UI.t('freshCalls')}</div>
       <div class="sec-link" data-go="signals">${UI.t('all')}</div></div>
-    <div class="stack">
-      ${m.recent.length ? m.recent.map(callCard).join('') : empty(UI.t('noCalls'))}
+
+    <div class="pills" data-pills="sideFilter">
+      ${[['all','tabAll'],['long','long'],['short','short']]
+        .map(([k, v]) => `<button class="pill ${S.sideFilter === k ? 'on' : ''}"
+          data-v="${k}">${UI.t(v)}</button>`).join('')}
+    </div>
+
+    <div class="stack" style="margin-top:12px">
+      ${recent.length ? recent.map(callCard).join('') : empty(UI.t('noCalls'))}
     </div>
   </div>`;
 }
 
+/* Три горизонта отдельными плитками, а не одно число.
+   Свёрнутый до последнего замера колл выглядит одинаково через час и
+   через неделю, хотя это утверждения разной силы: часовой замер — почти
+   шум, недельный — результат. Незакрытый горизонт помечен «идёт», а не
+   прочерком: пусто читается как «нет данных», хотя данные будут. */
+const CARD_HORIZONS = [['1', 'h1'], ['24', 'h24'], ['168', 'h168']];
+
 function callCard(c){
   const s = SIDE[c.side] || SIDE.watch;
-  const done = c.result != null;
+  const hz = c.horizons || {};
   return `<div class="card" ${c.id ? `data-coin="${esc(c.id)}"` : ''} style="cursor:pointer">
     <div style="display:flex;align-items:center;gap:11px">
       ${coinDot(c)}
@@ -232,12 +286,26 @@ function callCard(c){
         <div class="row-t">${esc(c.s)} <span class="badge ${s.b}">${UI.t(s.key)}</span></div>
         <div class="row-s">${c.tierEmoji || ''} ${c.tier ? UI.t('tier_' + c.tier) : ''} · ${localTime(c.at)}</div>
       </div>
-      <div style="text-align:right">
-        ${done
-          ? `<div class="row-v ${dirClass(c.result)}">${pct(c.result)}</div>
-             <div class="row-s">${UI.t('forHours')} ${c.horizon}ч</div>`
-          : `<div class="row-s">${UI.t('running')}</div>`}
-      </div>
+      ${c.price != null
+        ? `<div style="text-align:right">
+             <div class="row-v">${price(c.price)}</div>
+             <div class="row-s">${UI.t('entry')}</div>
+           </div>`
+        : ''}
+    </div>
+    <div class="grid3" style="margin-top:12px">
+      ${CARD_HORIZONS.map(([h, key]) => {
+        const o = hz[h] || {};
+        const done = o.result != null;
+        return `<div class="kpi c" style="background:${
+          done ? (o.result >= 0 ? 'var(--green-soft)' : 'var(--red-soft)') : 'var(--field)'}">
+          <div class="kpi-l" style="margin:0 0 3px">${UI.t(key)}</div>
+          <div class="kpi-v" style="font-size:16px">
+            ${done ? `<span class="${dirClass(o.result)}">${pct(o.result)}</span>`
+                   : `<span style="color:var(--muted)">${UI.t('running')}</span>`}
+          </div>
+        </div>`;
+      }).join('')}
     </div>
   </div>`;
 }
