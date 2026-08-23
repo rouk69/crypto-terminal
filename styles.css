@@ -7,17 +7,17 @@
   --bg:            #EEF0F5;
   --bg-deep:       #E6E9F1;
   --card:          #FFFFFF;
-  --primary:       #3D6EF7;
-  --primary-press: #2D5AE0;
-  --primary-soft:  #E4EBFF;
-  --primary-nav:   #DCE5FA;
+  --primary:       #4C6EF5;
+  --primary-press: #3D5BD9;
+  --primary-soft:  #E9EEFF;
+  --primary-nav:   #E9EEFF;
   --chart-soft:    #A9C0F9;
   --text:          #15171C;
   --muted:         #8B909C;
-  --muted-2:       #A6ABB6;
+  --muted-2:       #AEB2BD;
   --sep:           #ECEDF2;
-  --field:         #F2F3F7;
-  --green:         #30C36B;
+  --field:         #F4F5F9;
+  --green:         #34C759;
   --green-soft:    #E3F7EC;
   --red:           #F04438;
   --red-soft:      #FEECEB;
@@ -457,19 +457,19 @@ body{
    Акцент и статусные цвета осветлены. Тот же #3D6EF7 на тёмном теряет
    контраст с фоном, а красный и зелёный на чёрном выглядят грязными. */
 :root[data-theme="dark"]{
-  --bg:            #14161B;
-  --bg-deep:       #0E1014;
-  --card:          #1C1F26;
-  --primary:       #5B85FF;
+  --bg:            #0F1014;
+  --bg-deep:       #0A0B0E;
+  --card:          #1C1D22;
+  --primary:       #5B7FFF;
   --primary-press: #4A72E8;
-  --primary-soft:  #232C44;
-  --primary-nav:   #212940;
+  --primary-soft:  #23294A;
+  --primary-nav:   #23294A;
   --chart-soft:    #3A4E7A;
-  --text:          #F1F3F7;
-  --muted:         #939AA8;
-  --muted-2:       #767D8B;
-  --sep:           #262A33;
-  --field:         #232730;
+  --text:          #F2F3F5;
+  --muted:         #9BA1AC;
+  --muted-2:       #6B7280;
+  --sep:           #2C2D33;
+  --field:         #26272D;
   --green:         #35D07A;
   --green-soft:    #14301F;
   --red:           #FF6154;
