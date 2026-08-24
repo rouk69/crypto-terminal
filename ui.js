@@ -125,6 +125,11 @@
         'только сам мессенджер. Откройте приложение кнопкой в боте, и ' +
         'профиль появится.',
       subActive: 'Подписка активна', subNone: 'Без подписки',
+      myQueries: 'разборов', myFavorites: 'Избранное',
+      myFavCount: 'в избранном',
+      myAlerts: 'уведомлений', myDays: 'дней с ботом',
+      noFavorites: 'Пусто. Монеты добавляются звёздочкой в боте — '+
+        'на экране разбора.',
       subscription: 'Подписка', active: 'активна', until: 'до',
       whichCalls: 'Какие коллы приходят', on: 'вкл', off: 'выкл',
       togglesWhy: 'Переключаются в боте: «Настройки» → «Какие коллы ' +
@@ -206,6 +211,11 @@
         'the messenger itself issues one. Open the app from the button in ' +
         'the bot and your profile will appear.',
       subActive: 'Subscription active', subNone: 'No subscription',
+      myQueries: 'analyses', myFavorites: 'Favorites',
+      myFavCount: 'favorites',
+      myAlerts: 'alerts', myDays: 'days here',
+      noFavorites: 'Empty. Add coins with the star in the bot, on the '+
+        'analysis screen.',
       subscription: 'Subscription', active: 'active', until: 'until',
       whichCalls: 'Which calls you receive', on: 'on', off: 'off',
       togglesWhy: 'Change them in the bot: Settings → Which calls to send. ' +

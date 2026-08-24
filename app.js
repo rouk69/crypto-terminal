@@ -54,6 +54,7 @@ const P = {
   gem:     '<path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/>',
   horn:    '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
   medal:   '<circle cx="12" cy="15" r="6"/><path d="M8.5 9.5 7 2h10l-1.5 7.5"/>',
+  chevR:   '<path d="m9 5 7 7-7 7"/>',
   dice:    '<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.6" cy="8.6" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.3" fill="currentColor" stroke="none"/>'
 };
 
@@ -547,15 +548,36 @@ function viewMe(){
   </div>`;
 
   const st = me.settings || {};
+  // Значки те же, что и везде в приложении. Раньше тут стояли эмодзи —
+  // единственное цветное пятно среди линейных иконок.
   const toggles = [
-    ['calls_major','💎 Крупные'], ['calls_news','📣 Новостные'],
-    ['calls_alt','🥈 Альткоины'], ['calls_meme','🎰 Мемкоины']
+    ['calls_major','major'], ['calls_news','news'],
+    ['calls_alt','alt'], ['calls_meme','meme']
+  ];
+  const favs = me.favorites || [];
+
+  // Сколько дней человек с ботом. Считаем от first_seen, а не от даты
+  // подписки: интересно знакомство, а не покупка.
+  let days = null;
+  if (me.since) {
+    const d = new Date(String(me.since).replace(' ', 'T') + 'Z');
+    if (!isNaN(d)) days = Math.max(1, Math.round((Date.now() - d) / 86400000));
+  }
+
+  const tiles = [
+    { v: me.queries || 0, l: UI.t('myQueries') },
+    { v: favs.length,     l: UI.t('myFavCount') },
+    { v: me.alerts || 0,  l: UI.t('myAlerts') },
+    { v: days == null ? '—' : days, l: UI.t('myDays') }
   ];
 
   return `<div class="view">
     ${pageHead(esc(me.name || UI.t('profile')), me.subscribed ? UI.t('subActive') : UI.t('subNone'), false)}
+
     <div class="card">
       <div class="row" style="cursor:default;padding-top:0">
+        <div class="cdot" style="background:var(--field);color:var(--muted)">
+          ${svg(me.subscribed ? 'gem' : 'target', 18)}</div>
         <div class="row-main"><div class="row-t" style="font-size:15px">${UI.t('subscription')}</div></div>
         <div class="row-right"><div class="row-v ${me.subscribed ? 'up' : ''}">
           ${me.subscribed ? UI.t('active') : UI.t('none')}</div>
@@ -564,10 +586,43 @@ function viewMe(){
       </div>
     </div>
 
+    <div class="grid4" style="margin-top:12px">
+      ${tiles.map(t => `<div class="kpi c">
+        <div class="kpi-v">${esc(t.v)}</div>
+        <div class="kpi-l">${esc(t.l)}</div>
+      </div>`).join('')}
+    </div>
+
+    <div class="sec"><div class="sec-t">${UI.t('myFavorites')}</div>
+      ${favs.length ? `<div class="sec-s">${favs.length}</div>` : ''}</div>
+    <div class="card" style="padding:0">
+      ${favs.length ? favs.map(f => `<div class="row" ${
+          f.id ? `data-coin="${esc(f.id)}"` : 'style="cursor:default"'}>
+        ${coinDot(f)}
+        <div class="row-main">
+          <div class="row-t" style="font-size:15px">${esc(f.s)}</div>
+          <div class="row-s">${esc(f.n || '')}</div>
+        </div>
+        <div class="row-right">
+          ${f.p != null
+            ? `<div class="row-v">${price(f.p)}</div>
+               <div class="row-s ${dirClass(f.ch)}">${pct(f.ch)}</div>`
+            : `<div class="row-s">${UI.t('noData')}</div>`}
+        </div>
+        ${f.id ? `<div class="chev">${svg('chevR', 18)}</div>` : ''}
+      </div>`).join('')
+      : `<div class="note" style="border:0">${UI.t('noFavorites')}</div>`}
+    </div>
+
     <div class="sec"><div class="sec-t">${UI.t('whichCalls')}</div></div>
     <div class="card" style="padding:0">
-      ${toggles.map(([k, label]) => `<div class="row" style="cursor:default">
-        <div class="row-main"><div class="row-t" style="font-size:15px">${label}</div></div>
+      ${toggles.map(([k, tier]) => `<div class="row" style="cursor:default">
+        <div class="cdot" style="background:var(--field);color:var(--muted)">
+          ${svg(TIER_ICON[tier], 18)}</div>
+        <div class="row-main">
+          <div class="row-t" style="font-size:15px">${UI.t('tier_' + tier)}</div>
+          <div class="row-s">${UI.t('risk_' + tier)}</div>
+        </div>
         <div class="row-right"><div class="row-v ${st[k] ? 'up' : ''}">
           ${st[k] ? UI.t('on') : UI.t('off')}</div></div>
       </div>`).join('')}
