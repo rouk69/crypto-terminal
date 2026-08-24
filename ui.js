@@ -139,6 +139,8 @@
       errNoApi: 'Откройте приложение кнопкой в боте — по ссылке адрес ' +
         'данных не передаётся.',
       errCoin: 'Монету разобрать не вышло',
+      staleData: 'Бот сейчас недоступен. Данные собраны',
+      minAgo: 'мин назад',
       themeAuto: 'Тема: как в Telegram', themeLight: 'Тема: светлая',
       themeDark: 'Тема: тёмная',
       langSwitched: 'Язык переключён'
@@ -225,6 +227,8 @@
       errNoApi: 'Open the app from the button in the bot — a plain link ' +
         'carries no data address.',
       errCoin: 'Could not analyse this coin',
+      staleData: 'The bot is unreachable. Data is from',
+      minAgo: 'min ago',
       themeAuto: 'Theme: follow Telegram', themeLight: 'Theme: light',
       themeDark: 'Theme: dark',
       langSwitched: 'Language switched'

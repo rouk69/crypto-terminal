@@ -90,6 +90,9 @@ const S = {
   view:'market', prev:'market', coin:null,
   tierFilter:'all', sideFilter:'all', query:'',
   data:{ market:null, coins:null, signals:null, me:null, coin:null },
+  // Время последних УДАЧНЫХ данных, если сейчас показываем их из
+  // кэша. null — данные свежие.
+  stale:null,
   loading:false
 };
 
@@ -195,19 +198,93 @@ function coinDot(c){
 /* Подпись Telegram уходит заголовком, а не параметром: в адресной строке
    она осела бы в логах прокси и в истории браузера, а это фактически
    пароль на сутки. */
+/* Данные живут на ноутбуке за быстрым туннелем Cloudflare, а он смертен:
+   Cloudflare гасит такие туннели когда захочет, и при каждом подъёме
+   адрес МЕНЯЕТСЯ. Раньше любая такая заминка означала пустой экран с
+   надписью «данные недоступны» — притом что показать было что.
+
+   Отсюда три меры ниже. Ни одна не чинит туннель, все три делают его
+   смерть незаметной. */
+
+// Числа выбраны по худшему случаю, а не по среднему: если туннель мёртв,
+// человек ждёт ВСЕ попытки подряд. При 12 секундах и трёх попытках это
+// сорок секунд скелета на экране — дольше, чем кто-либо готов смотреть,
+// и хуже, чем сразу показать вчерашние данные с пометкой. Шесть секунд
+// и одна повторная дают худший случай около тринадцати.
+const FETCH_TIMEOUT = 6000;
+const FETCH_RETRIES = 1;
+const CACHE_PREFIX = 'cache:';
+
+/* Последний удачный ответ — в localStorage, вместе со временем.
+   Пишем и читаем через try: в приватном окне и при запрете на данные
+   сайта обращение к хранилищу само бросает исключение, и приложение
+   упало бы там, где всего лишь не смогло запомнить. */
+function cacheSave(key, data){
+  try {
+    localStorage.setItem(CACHE_PREFIX + key,
+      JSON.stringify({ at: Date.now(), data: data }));
+  } catch (e) {}
+}
+
+function cacheLoad(key){
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return null;
+    const box = JSON.parse(raw);
+    return (box && box.data) ? box : null;
+  } catch (e) { return null; }
+}
+
 async function api(path){
   if (NO_API) throw new Error('no-api');
-  const r = await fetch(API + path, {
-    headers: TG && TG.initData ? { 'X-Init-Data': TG.initData } : {}
-  });
-  if (!r.ok && r.status !== 401) throw new Error('HTTP ' + r.status);
-  return r.json();
+  let last;
+  for (let attempt = 0; attempt <= FETCH_RETRIES; attempt++) {
+    // AbortController, а не просто ожидание: без него мёртвый туннель
+    // держит запрос до собственного таймаута браузера — это минуты
+    // скелета на экране, которые человек читает как «сломалось».
+    const stop = new AbortController();
+    const timer = setTimeout(() => stop.abort(), FETCH_TIMEOUT);
+    try {
+      const r = await fetch(API + path, {
+        signal: stop.signal,
+        headers: TG && TG.initData ? { 'X-Init-Data': TG.initData } : {}
+      });
+      clearTimeout(timer);
+      if (!r.ok && r.status !== 401) throw new Error('HTTP ' + r.status);
+      return r.json();
+    } catch (err) {
+      clearTimeout(timer);
+      last = err;
+      // Пауза растёт: если туннель поднимается заново, вторая попытка
+      // почти наверняка попадёт в тот же провал, что и первая.
+      if (attempt < FETCH_RETRIES) {
+        await new Promise(res => setTimeout(res, 600 * (attempt + 1)));
+      }
+    }
+  }
+  throw last;
 }
 
 async function load(key, path, force){
   if (S.data[key] && !force) return S.data[key];
-  S.data[key] = await api(path);
-  return S.data[key];
+  try {
+    const fresh = await api(path);
+    S.data[key] = fresh;
+    cacheSave(key, fresh);
+    S.stale = null;
+    return fresh;
+  } catch (err) {
+    // ПОКАЗЫВАЕМ ПРОШЛОЕ, А НЕ ПУСТОТУ. Но обязательно с датой: данные
+    // без пометки о возрасте — это данные, выдающие себя за свежие, а по
+    // ним человек принимает решения о деньгах.
+    const box = cacheLoad(key);
+    if (box) {
+      S.data[key] = box.data;
+      S.stale = box.at;
+      return box.data;
+    }
+    throw err;
+  }
 }
 
 /* ---------------------------- экран: РЫНОК ------------------------------ */
@@ -662,8 +739,15 @@ const TABS = [
   ['me',    'profile', I.user]
 ];
 
+function staleBar(){
+  if (!S.stale) return '';
+  const mins = Math.max(1, Math.round((Date.now() - S.stale) / 60000));
+  return `<div class="warn" style="margin:0 0 12px">${
+    UI.t('staleData')} ${mins} ${UI.t('minAgo')}</div>`;
+}
+
 function render(){
-  $('#screen').innerHTML = (VIEWS[S.view] || viewMarket)();
+  $('#screen').innerHTML = staleBar() + ((VIEWS[S.view] || viewMarket)());
   $('#tabbar').innerHTML = TABS.map(([k, label, icon]) =>
     `<button class="tab ${S.view === k ? 'on' : ''}" data-tab="${k}">
        ${icon}<span>${UI.t(label)}</span></button>`).join('');
