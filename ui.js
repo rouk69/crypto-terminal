@@ -80,16 +80,19 @@
       callsAll: 'Все сигналы и их исходы',
       callsSettled: 'Отработавшие сигналы',
       loading: 'Загружаю…', refreshing: 'Обновляю…',
-      callsPerDay: 'Коллов в день', beatBtc: 'Коллов лучше BTC',
-      beatBtcHint: '50% — как держать BTC',
+      callsPerDay: 'Коллов в день', winrate: 'Винрейт',
+      winrateHint: 'BTC рос',
       passes: 'Сканов за 24ч', downtime: 'Простой',
       none: 'нет', min: 'мин',
       findCoin: 'Найти монету и разобрать',
-      tierAccuracy: 'Лучше BTC по классам', last30: 'за 30 дней',
-      tierNote: 'Доля коллов, которые дали больше, чем биткоин за тот же '+
-        'срок. 50% — бот не лучше и не хуже, чем просто держать BTC; '+
-        'ниже 50% — хуже. Так меряем, потому что «сколько раз угадали» '+
-        'на растущем рынке даёт те же 70% при слепой покупке чего угодно.',
+      tierAccuracy: 'Винрейт по классам', last30: 'за 30 дней',
+      tierNote: 'Доля коллов, закрывшихся в плюс. ×2 и ×0,5 — вес класса в '+
+        'общем винрейте: он равен тому, во сколько раз крупнее позицию '+
+        'мы советуем этим классом, иначе два десятка мемкоинов за месяц '+
+        'перевесили бы горстку крупных и «общий процент» оказался бы '+
+        'процентом по мемкоинам. Ничья в счёт не идёт. Смотрите вместе '+
+        'с ростом самого биткоина наверху: на растущем рынке высокий '+
+        'процент даёт и слепая покупка чего угодно.',
       noData: 'данных нет', measures: 'замеров',
       freshCalls: 'Свежие коллы', all: 'все',
       noCalls: 'Коллов пока не было', empty: 'Пока пусто',
@@ -155,17 +158,19 @@
       callsAll: 'All signals and their outcomes',
       callsSettled: 'Settled signals',
       loading: 'Loading…', refreshing: 'Refreshing…',
-      callsPerDay: 'Calls per day', beatBtc: 'Calls beating BTC',
-      beatBtcHint: '50% = same as holding BTC',
+      callsPerDay: 'Calls per day', winrate: 'Win rate',
+      winrateHint: 'BTC rose',
       passes: 'Scans in 24h', downtime: 'Downtime',
       none: 'none', min: 'min',
       findCoin: 'Find a coin to analyse',
-      tierAccuracy: 'Beat BTC by class', last30: 'last 30 days',
-      tierNote: 'Share of calls that returned more than bitcoin over the '+
-        'same period. 50% means the bot is no better and no worse than '+
-        'simply holding BTC; below 50% is worse. We measure it this way '+
-        'because a plain hit rate gives the same 70% for buying anything '+
-        'at random in a rising market.',
+      tierAccuracy: 'Win rate by class', last30: 'last 30 days',
+      tierNote: 'Share of calls that closed in profit. The ×2 and ×0.5 are '+
+        'class weights in the overall win rate — they match how much '+
+        'larger a position we advise for that class. Without them two '+
+        'dozen memecoin calls a month would outvote a handful of majors. '+
+        'Draws are excluded. Read it next to how often BTC itself rose, '+
+        'shown above: in a rising market a high hit rate comes from '+
+        'buying anything at all.',
       noData: 'no data', measures: 'measurements',
       freshCalls: 'Latest calls', all: 'all',
       noCalls: 'No calls yet', empty: 'Nothing here yet',

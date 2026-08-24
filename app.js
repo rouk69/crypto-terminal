@@ -253,16 +253,27 @@ function viewMarket(){
     S.sideFilter === 'all' || (c.side || 'watch') === S.sideFilter);
 
   const h24 = (m.horizons && m.horizons['24']) || {};
+  const wr = m.winrate || {};
   const kpis = [
     { v: m.callsPerDay != null ? nf(m.callsPerDay,1) : '—',
       l: UI.t('callsPerDay'), cls:'' },
-    // Точка отсчёта здесь 50%, а не ноль, и без подписи это не читается:
-    // 36% выглядит просто как «мало», хотя означает «хуже, чем не делать
-    // ничего». Цветом это уже сказано (dirClass от 50), но цвет объясняет
-    // только направление, а не величину.
-    { v: h24.beat != null ? h24.beat + '%' : '—',
-      l: UI.t('beatBtc'), hint: h24.beat != null ? UI.t('beatBtcHint') : '',
-      cls: h24.beat == null ? '' : dirClass(h24.beat - 50) },
+    // Винрейт, но взвешенный классом риска: считать коллы один к одному
+    // значит мерить число нажатий, а не деньги — мемкоинов за месяц
+    // вдесятеро больше, чем крупных, и общий процент оказывался бы
+    // процентом по мемкоинам.
+    //
+    // Рядом обязательно рост самого биткоина за тот же период. Без него
+    // винрейт нечитаем: на растущем рынке высокий процент даёт слепая
+    // покупка чего угодно, и «60%» ничего не сообщает о работе бота. По
+    // нему же считается цвет — сравниваем с рынком, а не с абстрактными
+    // 50%.
+    { v: wr.weighted != null ? wr.weighted + '%' : '—',
+      l: UI.t('winrate'),
+      hint: wr.btcUp != null
+        ? UI.t('winrateHint') + ' ' + wr.btcUp + '% · ' + wr.n + ' ' + UI.t('measures')
+        : '',
+      cls: (wr.weighted == null || wr.btcUp == null)
+        ? '' : dirClass(wr.weighted - wr.btcUp) },
     { v: m.passes, l: UI.t('passes'), cls:'' },
     { v: m.downtimeMin ? m.downtimeMin + ' ' + UI.t('min') : UI.t('none'),
       l: UI.t('downtime'), cls: m.downtimeMin ? 'down' : 'up' }
@@ -297,9 +308,10 @@ function viewMarket(){
           <div class="row-s wrap">${UI.t('risk_' + t.tier)} · ${UI.t('up_' + t.tier)}</div>
         </div>
         <div class="row-right">
-          ${t.n ? `<div class="row-v ${dirClass(t.beat - 50)}">${t.beat}%</div>
-                   <div class="row-s">${t.n} ${UI.t('measures')}</div>`
-                : `<div class="row-s">${UI.t('noData')}</div>`}
+          ${t.n && t.winrate != null
+            ? `<div class="row-v ${dirClass(t.winrate - 50)}">${t.winrate}%</div>
+               <div class="row-s">${t.n} ${UI.t('measures')} · ×${nf(t.weight,1)}</div>`
+            : `<div class="row-s">${UI.t('noData')}</div>`}
         </div>
       </div>`).join('')}
       <div class="note">${esc(UI.t('tierNote'))}</div>
