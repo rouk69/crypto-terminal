@@ -81,7 +81,7 @@
       callsSettled: 'Отработавшие сигналы',
       loading: 'Загружаю…', refreshing: 'Обновляю…',
       callsPerDay: 'Коллов в день', winrate: 'Винрейт',
-      winrateHint: 'BTC рос',
+      winrateHint: 'BTC рос', collecting: 'накапливается',
       passes: 'Сканов за 24ч', downtime: 'Простой',
       none: 'нет', min: 'мин',
       findCoin: 'Найти монету и разобрать',
@@ -90,7 +90,10 @@
         'общем винрейте: он равен тому, во сколько раз крупнее позицию '+
         'мы советуем этим классом, иначе два десятка мемкоинов за месяц '+
         'перевесили бы горстку крупных и «общий процент» оказался бы '+
-        'процентом по мемкоинам. Ничья в счёт не идёт. Смотрите вместе '+
+        'процентом по мемкоинам. Ничья в счёт не идёт. Пока замеров мало, '+
+        'процент не показывается вовсе: на трёх десятках наблюдений '+
+        'интервал шире ±18 пунктов, и такое число читается как факт, '+
+        'фактом не являясь. Смотрите вместе '+
         'с ростом самого биткоина наверху: на растущем рынке высокий '+
         'процент даёт и слепая покупка чего угодно.',
       noData: 'данных нет', measures: 'замеров',
@@ -159,7 +162,7 @@
       callsSettled: 'Settled signals',
       loading: 'Loading…', refreshing: 'Refreshing…',
       callsPerDay: 'Calls per day', winrate: 'Win rate',
-      winrateHint: 'BTC rose',
+      winrateHint: 'BTC rose', collecting: 'collecting',
       passes: 'Scans in 24h', downtime: 'Downtime',
       none: 'none', min: 'min',
       findCoin: 'Find a coin to analyse',
@@ -168,6 +171,9 @@
         'class weights in the overall win rate — they match how much '+
         'larger a position we advise for that class. Without them two '+
         'dozen memecoin calls a month would outvote a handful of majors. '+
+        'While samples are small no percentage is shown at all: on a few '+
+        'dozen measurements the interval is wider than ±18 points, and '+
+        'such a number reads as a fact while being none. '+
         'Draws are excluded. Read it next to how often BTC itself rose, '+
         'shown above: in a rising market a high hit rate comes from '+
         'buying anything at all.',

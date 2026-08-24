@@ -254,6 +254,9 @@ function viewMarket(){
 
   const h24 = (m.horizons && m.horizons['24']) || {};
   const wr = m.winrate || {};
+  const minAll = (m.minSample || {}).headline || 100;
+  const minTier = (m.minSample || {}).tier || 30;
+  const enoughAll = wr.weighted != null && (wr.n || 0) >= minAll;
   const kpis = [
     { v: m.callsPerDay != null ? nf(m.callsPerDay,1) : '—',
       l: UI.t('callsPerDay'), cls:'' },
@@ -267,13 +270,20 @@ function viewMarket(){
     // покупка чего угодно, и «60%» ничего не сообщает о работе бота. По
     // нему же считается цвет — сравниваем с рынком, а не с абстрактными
     // 50%.
-    { v: wr.weighted != null ? wr.weighted + '%' : '—',
-      l: UI.t('winrate'),
-      hint: wr.btcUp != null
-        ? UI.t('winrateHint') + ' ' + wr.btcUp + '% · ' + wr.n + ' ' + UI.t('measures')
-        : '',
-      cls: (wr.weighted == null || wr.btcUp == null)
-        ? '' : dirClass(wr.weighted - wr.btcUp) },
+    // ЧИСЛО НЕ ПОКАЗЫВАЕТСЯ, ПОКА ВЫБОРКИ МАЛО. На 74 замерах интервал
+    // винрейта ±11 пунктов: «50%» означает «где-то от 39 до 61», то есть
+    // неотличимо от монетки. Такое число читается как факт, фактом не
+    // являясь, — а на витрине по нему решают, платить или нет.
+    // Вместо процента показан прогресс: видно, что счётчик идёт.
+    (enoughAll
+      ? { v: wr.weighted + '%', l: UI.t('winrate'),
+          hint: wr.btcUp != null
+            ? UI.t('winrateHint') + ' ' + wr.btcUp + '% · ' + wr.n + ' ' + UI.t('measures')
+            : '',
+          cls: wr.btcUp == null ? '' : dirClass(wr.weighted - wr.btcUp) }
+      : { v: '—', l: UI.t('winrate'),
+          hint: UI.t('collecting') + ': ' + (wr.n || 0) + ' / ' + minAll,
+          cls: '' }),
     { v: m.passes, l: UI.t('passes'), cls:'' },
     { v: m.downtimeMin ? m.downtimeMin + ' ' + UI.t('min') : UI.t('none'),
       l: UI.t('downtime'), cls: m.downtimeMin ? 'down' : 'up' }
@@ -308,10 +318,11 @@ function viewMarket(){
           <div class="row-s wrap">${UI.t('risk_' + t.tier)} · ${UI.t('up_' + t.tier)}</div>
         </div>
         <div class="row-right">
-          ${t.n && t.winrate != null
+          ${t.winrate != null && t.n >= minTier
             ? `<div class="row-v ${dirClass(t.winrate - 50)}">${t.winrate}%</div>
                <div class="row-s">${t.n} ${UI.t('measures')} · ×${nf(t.weight,1)}</div>`
-            : `<div class="row-s">${UI.t('noData')}</div>`}
+            : `<div class="row-s">${UI.t('collecting')}</div>
+               <div class="row-s">${t.n || 0} / ${minTier} · ×${nf(t.weight,1)}</div>`}
         </div>
       </div>`).join('')}
       <div class="note">${esc(UI.t('tierNote'))}</div>
