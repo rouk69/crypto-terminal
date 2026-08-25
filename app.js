@@ -330,6 +330,29 @@ function fngCard(f){
   </div>`;
 }
 
+/* Плитка «сделки по плану». Отдельной функцией, а не строкой в списке:
+   у неё три состояния (нет данных, накапливается, число), и вложенные
+   тернарники внутри массива читались бы как шифр. */
+function planKpi(p, minSample){
+  const l = UI.t('planAvg');
+  if (!p || !p.n || p.n < minSample) {
+    const have = (p && p.n) || 0;
+    return { v: '—', l: l,
+             hint: UI.t('collecting') + ': ' + have + ' / ' + minSample,
+             cls: '' };
+  }
+  return {
+    v: (p.netAvg > 0 ? '+' : '') + nf(p.netAvg, 0) + '%',
+    l: l,
+    // Рядом — доля сделок в плюсе и сколько из них закрылось стопом.
+    // Средний процент в одиночку скрывает форму распределения: одна
+    // удачная сделка вытягивает десять неудачных.
+    hint: p.positive + '% ' + UI.t('planPositive') + ' · ' +
+          UI.t('planStops') + ' ' + p.stops + '/' + p.n,
+    cls: dirClass(p.netAvg)
+  };
+}
+
 function viewMarket(){
   const m = S.data.market;
   if (!m) return skeleton(UI.t('market'));
@@ -369,6 +392,15 @@ function viewMarket(){
       : { v: '—', l: UI.t('winrate'),
           hint: UI.t('collecting') + ': ' + (wr.n || 0) + ' / ' + minAll,
           cls: '' }),
+    // Средний ЧИСТЫЙ процент по сделкам, сыгранным строго по плану:
+    // половина на первой цели, стоп в вход, закрытие через сутки. Стоит
+    // рядом с винрейтом намеренно — это разные величины, и расходятся
+    // они законно: цена умеет прийти к суткам в плюс, задев по дороге
+    // стоп, и для человека это минус на счёте, а не победа.
+    //
+    // Молчит по тому же правилу, что и винрейт: пока замеров мало,
+    // показан счётчик, а не число.
+    planKpi(m.planStats, minTier),
     { v: m.passes, l: UI.t('passes'), cls:'' },
     { v: m.downtimeMin ? m.downtimeMin + ' ' + UI.t('min') : UI.t('none'),
       l: UI.t('downtime'), cls: m.downtimeMin ? 'down' : 'up' }
@@ -565,7 +597,7 @@ function viewCoin(){
     </div>
 
     ${c.levels ? levelsCard(c) : ''}
-    ${c.plan ? planCard(c) : ''}
+    ${c.plan ? planCard(c) : (c.planMissing ? planMissingCard() : '')}
 
     <div class="sec"><div class="sec-t">${UI.t('whyScore')}</div>
       <div class="sec-s">${UI.t('weight')}</div></div>
@@ -651,6 +683,8 @@ function planCard(c){
   return `<div class="sec"><div class="sec-t">${UI.t('plan')}</div>
       <div class="sec-s">${UI.t('planSub')}</div></div>
     <div class="card" style="padding:0">
+      ${c.isSignal ? '' : `<div class="warn" style="margin:12px 12px 0">
+        ${UI.t('planTentative')}</div>`}
       ${rows.map(([t, v, s, k, ic]) => `<div class="row" style="cursor:default">
         <div class="cdot" style="background:var(--field);color:var(--muted)">
           ${svg(ic, 18)}</div>
@@ -659,6 +693,17 @@ function planCard(c){
         <div class="row-right"><div class="row-v ${k}">${v}</div></div>
       </div>`).join('')}
       <div class="note">${UI.t('planNote')}</div>
+    </div>`;
+}
+
+/* Направление есть, а уровней нет — не загрузился ряд цен (обычно лимит
+   запросов у CoinGecko). Пустое место на экране неотличимо от «такого
+   тут не бывает», и ровно так это и прочитали: владелец решил, что бот
+   про плечо и выход не умеет вовсе. Поэтому отсутствие блока названо. */
+function planMissingCard(){
+  return `<div class="sec"><div class="sec-t">${UI.t('plan')}</div></div>
+    <div class="card">
+      <div class="row-s wrap">${UI.t('planMissing')}</div>
     </div>`;
 }
 

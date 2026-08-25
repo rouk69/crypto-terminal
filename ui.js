@@ -113,6 +113,12 @@
       levels: 'Вход, цели и стоп', rr: 'прибыль к риску (R:R)',
       entry: 'Вход', target1: 'Цель 1', target2: 'Цель 2', stop: 'Стоп',
       plan: 'План сделки', planSub: 'проценты чистые, на маржу позиции',
+      planAvg: 'Сделки по плану', planPositive: 'в плюсе', planStops: 'стоп',
+      planTentative: 'Сигнала бот не даёт: перевес есть, но слабый. Ниже — ' +
+        'как выглядел бы вход, если решите зайти сами.',
+      planMissing: 'План не считается: не загрузился ряд цен, а уровни ' +
+        'берутся из суточного диапазона. Обычно это лимит запросов — ' +
+        'откройте монету через минуту.',
       planResult: 'Сделка по плану:',
       planThin: 'Путь цены записан редко — исход недостоверен и в ' +
         'статистику не идёт.',
@@ -222,6 +228,12 @@
       levels: 'Entry, targets and stop', rr: 'reward to risk (R:R)',
       entry: 'Entry', target1: 'Target 1', target2: 'Target 2', stop: 'Stop',
       plan: 'Trade plan', planSub: 'net percentages, on position margin',
+      planAvg: 'Trades by the plan', planPositive: 'in profit', planStops: 'stopped',
+      planTentative: 'Not a signal: the lean is there but weak. Below is ' +
+        'what an entry would look like if you decide to take it yourself.',
+      planMissing: 'No plan: the price series did not load, and levels come ' +
+        'from the daily range. Usually this is a rate limit — open the coin ' +
+        'again in a minute.',
       planResult: 'Trade by the plan:',
       planThin: 'The price path was recorded too sparsely — this outcome ' +
         'is unreliable and is left out of the statistics.',
