@@ -59,6 +59,9 @@ const P = {
   horn:    '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
   medal:   '<circle cx="12" cy="15" r="6"/><path d="M8.5 9.5 7 2h10l-1.5 7.5"/>',
   chevR:   '<path d="m9 5 7 7-7 7"/>',
+  scale:   '<path d="M12 3v18"/><path d="M5 7h14"/><path d="m5 7-3 6h6z"/><path d="m19 7-3 6h6z"/><path d="M8 21h8"/>',
+  clock:   '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/>',
+  wallet:  '<path d="M3 7a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M16 12h3"/>',
   dice:    '<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.6" cy="8.6" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.3" fill="currentColor" stroke="none"/>'
 };
 
@@ -463,7 +466,25 @@ function callCard(c){
         </div>`;
       }).join('')}
     </div>
+    ${planResult(c.plan)}
   </div>`;
+}
+
+/* Исход плана под горизонтами — и подписанный отдельно от них.
+   Горизонт отвечает «где цена через сутки», план — «чем кончилась сделка
+   по присланной инструкции»: половина на первой цели, стоп в вход,
+   закрытие по времени. Расходятся они законно, и складывать их в один
+   ряд плиток значило бы выдать две разные величины за одну. */
+function planResult(p){
+  if (!p || p.net == null) return '';
+  const label = UI.t('exit_' + p.exit) || p.exit;
+  const cls = p.net > 0 ? 'up' : p.net < 0 ? 'down' : '';
+  return `<div class="row-s" style="margin-top:10px;display:flex;gap:8px;align-items:baseline">
+    <span>${UI.t('planResult')}</span>
+    <span style="color:var(--text);font-weight:600">${esc(label)}</span>
+    <span class="row-v ${cls}" style="margin-left:auto">${
+      p.net > 0 ? '+' : ''}${nf(p.net, 0)}%${p.x > 1 ? ` · x${p.x}` : ''}</span>
+  </div>${p.thin ? `<div class="row-s">${UI.t('planThin')}</div>` : ''}`;
 }
 
 /* ---------------------------- экран: МОНЕТЫ ----------------------------- */
@@ -544,6 +565,7 @@ function viewCoin(){
     </div>
 
     ${c.levels ? levelsCard(c) : ''}
+    ${c.plan ? planCard(c) : ''}
 
     <div class="sec"><div class="sec-t">${UI.t('whyScore')}</div>
       <div class="sec-s">${UI.t('weight')}</div></div>
@@ -593,6 +615,50 @@ function levelsCard(c){
         <div class="row-right"><div class="row-v ${k}">${price(v)}</div></div>
       </div>`).join('')}
       <div class="note">${UI.t('levelsNote')}</div>
+    </div>`;
+}
+
+/* План сделки: плечо, чистый выход и срок.
+   Отдельной карточкой под уровнями, а не строками внутри них: уровни
+   отвечают на вопрос «куда», план — на вопрос «сколько это в деньгах и
+   когда закрывать». Смешав их, получили бы восемь одинаковых на вид
+   строк, из которых половина в валюте, а половина в процентах.
+
+   Проценты здесь ЧИСТЫЕ — на маржу позиции, после комиссий и фандинга.
+   Рядом стоит движение цены: без него «+14%» при движении в 3% читается
+   как ошибка, с ним видно, что разницу делает плечо. */
+function planCard(c){
+  const p = c.plan;
+  const net = v => `${v > 0 ? '+' : ''}${nf(v, 0)}%`;
+  // Движение цены — знаком ЦЕНЫ, а не выгоды: в шорте выгодное движение
+  // это падение, и «+22%» под ценой ниже входа читалось бы как рост.
+  // Цвет при этом идёт по ИТОГУ (справа стоит чистый процент), поэтому
+  // цели зелёные, а стоп красный независимо от стороны сделки.
+  const sgn = c.side === 'short' ? -1 : 1;
+  const move = v => `${v > 0 ? '+' : ''}${nf(v, 1)}%`;
+
+  const rows = [
+    [UI.t('leverage'), p.x > 1 ? `x${p.x}` : UI.t('noLeverage'),
+     p.liqPct ? `${UI.t('liq')} ${nf(p.liqPct, 0)}%` : '', '', 'scale'],
+    [UI.t('target1'), net(p.netT1), move(p.t1Pct * sgn), 'up', 'target'],
+    [UI.t('target2'), net(p.netT2), move(p.t2Pct * sgn), 'up', 'target'],
+    [UI.t('stop'),    net(p.netStop), move(-p.stopPct * sgn), 'down', 'octagon'],
+    [UI.t('closeBy'), `${p.hold} ${UI.t('h')}`, UI.t('closeAnyway'), '', 'clock'],
+    [UI.t('onDeposit'), `${net(p.depositT1)} / ${net(p.depositStop)}`,
+     `${UI.t('stake')} ${nf(p.stake, 0)}%`, '', 'wallet']
+  ];
+
+  return `<div class="sec"><div class="sec-t">${UI.t('plan')}</div>
+      <div class="sec-s">${UI.t('planSub')}</div></div>
+    <div class="card" style="padding:0">
+      ${rows.map(([t, v, s, k, ic]) => `<div class="row" style="cursor:default">
+        <div class="cdot" style="background:var(--field);color:var(--muted)">
+          ${svg(ic, 18)}</div>
+        <div class="row-main"><div class="row-t" style="font-size:15px">${t}</div>
+          ${s ? `<div class="row-s">${s}</div>` : ''}</div>
+        <div class="row-right"><div class="row-v ${k}">${v}</div></div>
+      </div>`).join('')}
+      <div class="note">${UI.t('planNote')}</div>
     </div>`;
 }
 

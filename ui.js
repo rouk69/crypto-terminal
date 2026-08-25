@@ -112,6 +112,27 @@
       agreement: 'согласие',
       levels: 'Вход, цели и стоп', rr: 'прибыль к риску (R:R)',
       entry: 'Вход', target1: 'Цель 1', target2: 'Цель 2', stop: 'Стоп',
+      plan: 'План сделки', planSub: 'проценты чистые, на маржу позиции',
+      planResult: 'Сделка по плану:',
+      planThin: 'Путь цены записан редко — исход недостоверен и в ' +
+        'статистику не идёт.',
+      exit_target2: 'обе цели', exit_target1: 'цель 1, остаток по времени',
+      exit_breakeven: 'цель 1, остаток в безубытке', exit_stop: 'стоп',
+      exit_time: 'по времени', exit_partial: 'наблюдение оборвалось',
+      exit_nodata: 'путь цены не записан',
+      leverage: 'Плечо', noLeverage: 'без плеча', liq: 'ликвидация',
+      closeBy: 'Закрыть через', closeAnyway: 'даже если уровни не задеты',
+      h: 'ч', onDeposit: 'На весь депозит', stake: 'позиция',
+      planNote: 'Плечо не выбрано, а посчитано от стопа: на этом стопе оно ' +
+        'стоит пятой части маржи, если сигнал не сработает. Ликвидация ' +
+        'остаётся вдвое дальше стопа — запас нужен на то, что стоп ' +
+        'исполняется по стакану, а не по своей цене. На первой цели ' +
+        'фиксируется половина, стоп переносится в вход, и дальше сделка уже ' +
+        'не может закончиться минусом. По времени она закрывается через ' +
+        'сутки в любом случае: ровно на этом горизонте меряется точность ' +
+        'коллов, дальше про сигнал не известно ничего. Проценты чистые — ' +
+        'после комиссий и фандинга, которые на плече умножаются вместе с ' +
+        'прибылью.',
       whyScore: 'Из чего оценка', weight: 'вес компонента',
       news: 'Новости', newsEcho: 'Пишут о самом движении',
       noSeries: 'Ряд цен недоступен',
@@ -200,6 +221,27 @@
       agreement: 'agreement',
       levels: 'Entry, targets and stop', rr: 'reward to risk (R:R)',
       entry: 'Entry', target1: 'Target 1', target2: 'Target 2', stop: 'Stop',
+      plan: 'Trade plan', planSub: 'net percentages, on position margin',
+      planResult: 'Trade by the plan:',
+      planThin: 'The price path was recorded too sparsely — this outcome ' +
+        'is unreliable and is left out of the statistics.',
+      exit_target2: 'both targets', exit_target1: 'target 1, rest on time',
+      exit_breakeven: 'target 1, rest at breakeven', exit_stop: 'stop',
+      exit_time: 'on time', exit_partial: 'observation cut short',
+      exit_nodata: 'no price path recorded',
+      leverage: 'Leverage', noLeverage: 'no leverage', liq: 'liquidation',
+      closeBy: 'Close after', closeAnyway: 'even if no level is hit',
+      h: 'h', onDeposit: 'On the whole deposit', stake: 'position',
+      planNote: 'Leverage is derived from the stop, not picked: at this stop ' +
+        'it costs a fifth of the position margin if the signal fails. ' +
+        'Liquidation stays twice as far as the stop — that buffer covers the ' +
+        'fact that a stop fills against the book, not at its own price. Half ' +
+        'is taken at the first target and the stop moves to entry, after ' +
+        'which the trade can no longer end in the red. It closes on time ' +
+        'after a day regardless: that is exactly the horizon call accuracy ' +
+        'is measured on, and beyond it nothing is known about the signal. ' +
+        'Percentages are net of fees and funding, which leverage multiplies ' +
+        'along with the profit.',
       whyScore: 'Behind the score', weight: 'component weight',
       news: 'News', newsEcho: 'Coverage of the move itself',
       noSeries: 'Price series unavailable',
