@@ -162,7 +162,9 @@
       togglesWhy: 'Переключаются в боте: «Настройки» → «Какие коллы ' +
         'присылать». Здесь они показаны, но не меняются — чтобы не было ' +
         'двух мест, где одно и то же настраивается по-разному.',
-      errData: 'Данные недоступны: бот выключен или туннель перезапустился.',
+      errData: 'Данные недоступны: бот выключен или туннель ' +
+        'перезапустился. Если перезапустился — откройте приложение заново ' +
+        'кнопкой в боте, у неё всегда свежий адрес.',
       errNoApi: 'Откройте приложение кнопкой в боте — по ссылке адрес ' +
         'данных не передаётся.',
       errRateLimit: 'Источник ограничивает запросы. Данные есть, их просто ' +
@@ -279,7 +281,9 @@
       togglesWhy: 'Change them in the bot: Settings → Which calls to send. ' +
         'They are shown here but not editable, so the same thing is not ' +
         'configured in two different places.',
-      errData: 'No data: the bot is off or the tunnel restarted.',
+      errData: 'No data: the bot is off or the tunnel restarted. If it ' +
+        'restarted, reopen the app from the button in the bot — that one ' +
+        'always carries the current address.',
       errNoApi: 'Open the app from the button in the bot — a plain link ' +
         'carries no data address.',
       errRateLimit: 'The data source is rate-limiting us. The data exists, ' +
