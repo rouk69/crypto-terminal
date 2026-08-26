@@ -455,7 +455,11 @@ function viewMarket(){
       <div class="note">${esc(UI.t('tierNote'))}</div>
     </div>
 
-    <div class="sec"><div class="sec-t">${UI.t('freshCalls')}</div>
+    <!-- Подпись зависит от того, что в блоке лежит. Неподписчику сюда
+         приходят только отработавшие коллы, и называть их «свежими»
+         значило бы обещать то, чего он не получил. -->
+    <div class="sec"><div class="sec-t">${
+        m.recentFull ? UI.t('freshCalls') : UI.t('callsSettled')}</div>
       <div class="sec-link" data-go="signals">${UI.t('all')}</div></div>
 
     <div class="pills" data-pills="sideFilter">
