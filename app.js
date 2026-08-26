@@ -257,11 +257,21 @@ async function api(path){
         headers: TG && TG.initData ? { 'X-Init-Data': TG.initData } : {}
       });
       clearTimeout(timer);
+      // 503 — источник ограничил запросы. Это НЕ «нет данных»: данные
+      // есть, их сейчас не отдают, и через минуту отдадут. Повторять
+      // прямо сейчас бессмысленно, поэтому выходим из цикла попыток
+      // сразу — экран должен сказать правду, а не молчать три секунды.
+      if (r.status === 503) {
+        const limited = new Error('rate-limit');
+        limited.rateLimit = true;
+        throw limited;
+      }
       if (!r.ok && r.status !== 401) throw new Error('HTTP ' + r.status);
       return r.json();
     } catch (err) {
       clearTimeout(timer);
       last = err;
+      if (err && err.rateLimit) throw err;
       // Пауза растёт: если туннель поднимается заново, вторая попытка
       // почти наверняка попадёт в тот же провал, что и первая.
       if (attempt < FETCH_RETRIES) {
@@ -904,9 +914,12 @@ async function go(view, opts){
     }
   } catch (err) {
     // Разные беды — разные слова. «Бот выключен» на закладке без адреса
-    // отправило бы человека чинить то, что не сломано.
-    toast(err && err.message === 'no-api'
-      ? UI.t('errNoApi') : UI.t('errData'));
+    // отправило бы человека чинить то, что не сломано, а «нет данных»
+    // при исчерпанном лимите источника — уйти, хотя достаточно подождать
+    // минуту.
+    toast(err && err.rateLimit ? UI.t('errRateLimit')
+      : err && err.message === 'no-api' ? UI.t('errNoApi')
+      : UI.t('errData'));
   }
   render();
 }

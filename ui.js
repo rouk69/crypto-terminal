@@ -165,6 +165,8 @@
       errData: 'Данные недоступны: бот выключен или туннель перезапустился.',
       errNoApi: 'Откройте приложение кнопкой в боте — по ссылке адрес ' +
         'данных не передаётся.',
+      errRateLimit: 'Источник ограничивает запросы. Данные есть, их просто ' +
+        'сейчас не отдают — попробуйте через минуту.',
       errCoin: 'Монету разобрать не вышло',
       staleData: 'Бот сейчас недоступен. Данные собраны',
       minAgo: 'мин назад',
@@ -280,6 +282,8 @@
       errData: 'No data: the bot is off or the tunnel restarted.',
       errNoApi: 'Open the app from the button in the bot — a plain link ' +
         'carries no data address.',
+      errRateLimit: 'The data source is rate-limiting us. The data exists, ' +
+        'it is just not being served right now — try again in a minute.',
       errCoin: 'Could not analyse this coin',
       staleData: 'The bot is unreachable. Data is from',
       minAgo: 'min ago',
